@@ -1,14 +1,14 @@
 <!doctype html>
 <html lang="en">
 
-<head>
+  <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Nathaniel Gomez — Portfolio</title>
   <meta name="description" content="Mechatronics engineer portfolio of Nathaniel Gomez." />
   <meta name="color-scheme" content="light dark" />
 
-  <!-- (Optional) PWA hooks — safe even if files don’t exist -->
+  <!-- (Optional) PWA hooks -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#000000" />
   <link rel="apple-touch-icon" href="icon-192.png" />
@@ -17,8 +17,7 @@
   <link rel="icon" type="image/x-icon" href="https://raw.githubusercontent.com/kymiii/test/refs/heads/main/file_000000002b7061f78dcb3ef6921b6973%20(1).ico" />
   <link rel="shortcut icon" href="https://raw.githubusercontent.com/kymiii/test/refs/heads/main/file_000000002b7061f78dcb3ef6921b6973%20(1).ico" />
 
-  <!-- ===== Added: Google Analytics (gtag.js) ===== -->
-  <!-- Google tag (gtag.js) -->
+  <!-- ===== Google Analytics (gtag.js) ===== -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-P2XR3CWEC3"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -27,18 +26,19 @@
     gtag('config', 'G-P2XR3CWEC3');
   </script>
 
-  <!-- ===== Added: Google Site Verification ===== -->
+  <!-- ===== Google Site Verification ===== -->
   <meta name="google-site-verification" content="cLgmh2Gje5sjxwZhal9j8A9PWdKTjkNAeB8xCqsASBU" />
 
-  <!-- ===== Added: Basic SEO best practices ===== -->
+  <!-- Basic SEO -->
   <meta name="robots" content="index,follow,max-image-preview:large" />
-  <link rel="canonical" href="/" />
+  <link rel="canonical" href="https://nthnlgmz.github.io/portfolio/" />
+  <link rel="sitemap" type="application/xml" href="https://nthnlgmz.github.io/portfolio/sitemap.xml" />
 
   <!-- Open Graph -->
   <meta property="og:title" content="Nathaniel Gomez — Portfolio" />
   <meta property="og:description" content="Mechatronics engineer portfolio of Nathaniel Gomez." />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="/" />
+  <meta property="og:url" content="https://nthnlgmz.github.io/portfolio/" />
   <meta property="og:site_name" content="Nathaniel Gomez" />
   <meta property="og:locale" content="en_PH" />
   <meta property="og:image" content="https://raw.githubusercontent.com/kymiii/test/refs/heads/main/1000008194-removebg.webp" />
@@ -50,16 +50,13 @@
   <meta name="twitter:description" content="Mechatronics engineer portfolio of Nathaniel Gomez." />
   <meta name="twitter:image" content="https://raw.githubusercontent.com/kymiii/test/refs/heads/main/1000008194-removebg.webp" />
 
-  <!-- Rel=me (verifiable profile links) -->
+  <!-- Rel=me -->
   <link rel="me" href="mailto:nthnlgmz08@gmail.com" />
   <link rel="me" href="https://www.linkedin.com/in/nthnlgmz" />
   <link rel="me" href="https://github.com/nthnlgmz" />
   <link rel="me" href="https://www.facebook.com/nthnlgmz" />
 
-  <!-- Discoverability -->
-  <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
-
-  <!-- Resource Hints (faster connects to third-parties you already use) -->
+  <!-- Resource Hints -->
   <link rel="dns-prefetch" href="//raw.githubusercontent.com">
   <link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin>
   <link rel="dns-prefetch" href="//fonts.googleapis.com">
@@ -72,17 +69,13 @@
   <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    tailwind.config = {
-      darkMode: 'class'
-    };
+    tailwind.config = { darkMode: 'class' };
   </script>
 
-  <!-- Font: Eczar -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- Font -->
   <link href="https://fonts.googleapis.com/css2?family=Eczar:wght@400..800&display=swap" rel="stylesheet">
 
-  <!-- ===== Added: Structured Data (JSON-LD) ===== -->
+  <!-- Structured Data -->
   <script type="application/ld+json">
   {
     "@context":"https://schema.org",
@@ -91,7 +84,7 @@
     "jobTitle":"Mechatronics Engineer",
     "description":"I design and build smart systems—both physical and digital—that solve everyday problems.",
     "email":"mailto:nthnlgmz08@gmail.com",
-    "url":"/",
+    "url":"https://nthnlgmz.github.io/portfolio/",
     "image":"https://raw.githubusercontent.com/kymiii/test/refs/heads/main/1000008194-removebg.webp",
     "sameAs":[
       "https://www.linkedin.com/in/nthnlgmz",
@@ -100,119 +93,68 @@
     ]
   }
   </script>
-
   <script type="application/ld+json">
   {
     "@context":"https://schema.org",
     "@type":"WebSite",
     "name":"Nathaniel Gomez — Portfolio",
-    "url":"/",
+    "url":"https://nthnlgmz.github.io/portfolio/",
     "potentialAction":{
       "@type":"SearchAction",
-      "target":"/?q={search_term_string}",
+      "target":"https://nthnlgmz.github.io/portfolio/?q={search_term_string}",
       "query-input":"required name=search_term_string"
     }
   }
   </script>
 
+  <!-- ====== Inline CSS ====== -->
   <style>
-    /* ===== Grid / Box Pattern (Light & Dark) ===== */
     :root {
       --bg: #fdfefe;
       --fg: #121316;
       --grid: rgba(100, 149, 237, 0.08);
-      /* light blue lines */
       --grid-strong: rgba(100, 149, 237, 0.12);
       --card: #ffffff;
       --card-border: rgba(0, 0, 0, 0.10);
       --shadow: 0 6px 24px rgba(0, 0, 0, .10);
       --cell: 56px;
-      /* larger cells by default */
     }
-
     .dark {
       --bg: #0b0c0f;
       --fg: #f2f3f5;
-      /* gentle cyan in dark mode (not too bright) */
       --grid: rgba(136, 197, 255, 0.10);
       --grid-strong: rgba(136, 197, 255, 0.16);
       --card: #111318;
       --card-border: rgba(255, 255, 255, 0.12);
       --shadow: 0 10px 30px rgba(0, 0, 0, .45);
     }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
-    #snackbar {
-      max-width: 90%;
-      /* make it shrink on very small screens */
-      width: fit-content;
-      /* keep natural size if screen is wide */
-    }
-
-    @media (max-width: 640px) {
-      /* small screens */
-      #snackbar {
-        width: 90%;
-        /* fill 90% of screen width */
-      }
-    }
-
+    html { scroll-behavior: smooth; }
+    #snackbar { max-width: 90%; width: fit-content; }
+    @media (max-width: 640px){ #snackbar{width:90%;} }
     body {
       font-family: "Eczar", serif;
       font-optical-sizing: auto;
       font-style: normal;
-      /* Pattern background */
-      margin: 0;
-      color: var(--fg);
+      margin:0;
+      color:var(--fg);
       background:
-        /* base grid */
-        linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / var(--cell) var(--cell),
-        linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / var(--cell) var(--cell),
-        /* stronger every 4 cells for structure */
-        linear-gradient(var(--grid-strong) 1px, transparent 1px) 0 0 / calc(var(--cell) * 4) calc(var(--cell) * 4),
-        linear-gradient(90deg, var(--grid-strong) 1px, transparent 1px) 0 0 / calc(var(--cell) * 4) calc(var(--cell) * 4),
-        /* soft vignette top/bottom */
-        radial-gradient(100% 60% at 50% 0%, rgba(0, 0, 0, .05), transparent 60%),
-        radial-gradient(80% 70% at 50% 100%, rgba(0, 0, 0, .05), transparent 60%),
+        linear-gradient(var(--grid) 1px,transparent 1px) 0 0/var(--cell) var(--cell),
+        linear-gradient(90deg,var(--grid) 1px,transparent 1px)0 0/var(--cell) var(--cell),
+        linear-gradient(var(--grid-strong)1px,transparent 1px)0 0/calc(var(--cell)*4)calc(var(--cell)*4),
+        linear-gradient(90deg,var(--grid-strong)1px,transparent 1px)0 0/calc(var(--cell)*4)calc(var(--cell)*4),
+        radial-gradient(100% 60% at 50% 0%,rgba(0,0,0,.05),transparent 60%),
+        radial-gradient(80% 70% at 50% 100%,rgba(0,0,0,.05),transparent 60%),
         var(--bg);
-      background-attachment: fixed, fixed, fixed, fixed, fixed, fixed, fixed;
+      background-attachment:fixed,fixed,fixed,fixed,fixed,fixed,fixed;
     }
-
-    /* Pinterest-like masonry with tight gaps */
-    .masonry {
-      column-gap: 0.75rem;
-    }
-
-    @media (min-width: 768px) {
-      .masonry {
-        column-count: 2;
-      }
-    }
-
-    @media (min-width: 1024px) {
-      .masonry {
-        column-count: 3;
-      }
-    }
-
-    .masonry-item {
-      break-inside: avoid;
-      margin-bottom: 0.75rem;
-    }
-
-    /* Simple dropdown (More) */
-    details[role="list"] summary::-webkit-details-marker {
-      display: none;
-    }
-
-    details[open][role="list"]>summary svg {
-      transform: rotate(180deg);
-    }
+    .masonry{column-gap:.75rem;}
+    @media(min-width:768px){.masonry{column-count:2;}}
+    @media(min-width:1024px){.masonry{column-count:3;}}
+    .masonry-item{break-inside:avoid;margin-bottom:.75rem;}
+    details[role="list"] summary::-webkit-details-marker{display:none;}
+    details[open][role="list"]>summary svg{transform:rotate(180deg);}
   </style>
-</head>
+  </head>
 
 <body class="min-h-screen selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black">
   <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 rounded bg-black px-3 py-1 text-white dark:bg-white dark:text-black">Skip to content</a>
