@@ -1,2 +1,4 @@
 User-agent: *
-Disallow:
+Allow: /
+
+Sitemap: https://nthnlgmz.github.io/portfolio/sitemap.xml
