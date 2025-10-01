@@ -238,10 +238,12 @@
           <div class="flex flex-col items-center md:items-start gap-4">
             <div class="relative w-64 md:w-72 lg:w-80 aspect-square rounded-3xl overflow-hidden border border-zinc-200 dark:border-zinc-700 shadow-inner bg-white/60 dark:bg-black/30 backdrop-blur-sm">
               <!-- Light image -->
-              <img src="https://raw.githubusercontent.com/kymiii/test/refs/heads/main/1000008194-removebg.webp" alt="Morning portrait" class="block select-none pointer-events-none w-full h-full object-cover dark:hidden" draggable="false" oncontextmenu="return false;" />
+              <img src="https://raw.githubusercontent.com/kymiii/test/refs/heads/main/1000008194-removebg.webp" fetchpriority="high" alt="Morning portrait" class="block select-none pointer-events-none w-full h-full object-cover dark:hidden" draggable="false" oncontextmenu="return false;" />
               <!-- Dark image -->
+              <div data-nosnippet>
               <img src="https://raw.githubusercontent.com/kymiii/test/refs/heads/main/IMG_20250912_095458.webp" alt="Night portrait" class="hidden select-none pointer-events-none w-full h-full object-cover dark:block" draggable="false" oncontextmenu="return false;" />
-            </div>
+              </div>
+              </div>
 
             <!-- badges BELOW the image -->
             <div class="flex flex-wrap justify-center md:justify-start gap-2 text-sm text-zinc-700 dark:text-zinc-300">
@@ -254,7 +256,13 @@
           <div class="mt-10 md:mt-0 py-4 md:py-6">
             <h1 class="text-3xl font-bold flex items-center gap-2">
               Nathaniel Gomez
-              <img src="https://raw.githubusercontent.com/kymiii/test/refs/heads/main/18290780.png" alt="verified" class="w-5 h-5 select-none pointer-events-none" draggable="false" oncontextmenu="return false;" />
+              <div data-nosnippet>
+  <img src="https://raw.githubusercontent.com/kymiii/test/refs/heads/main/18290780.png"
+       alt="verified"
+       class="w-5 h-5 select-none pointer-events-none"
+       draggable="false"
+       oncontextmenu="return false;" />
+</div>
             </h1>
             <p class="mt-4 max-w-2xl text-zinc-700 dark:text-zinc-300">
               I design and build smart systems—both physical and digital—that solve everyday problems.
