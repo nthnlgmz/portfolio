@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nathaniel Gomez — Portfolio</title>
+  <meta name="description" content="Mechatronics engineer portfolio of Nathaniel Gomez." />
+  <meta name="color-scheme" content="light dark" />
+
+  <!-- (Optional) PWA hooks -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#000000" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="https://github.com/nthnlgmz/portfolio/raw/refs/heads/main/logo.ico" />
+  <link rel="shortcut icon" href="https://raw.githubusercontent.com/kymiii/test/refs/heads/main/file_000000002b7061f78dcb3ef6921b6973%20(1).ico" />
+
+  <!-- ===== Google Analytics (gtag.js) ===== -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-P2XR3CWEC3"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-P2XR3CWEC3');
+  </script>
+
+  <!-- ===== Google Site Verification ===== -->
+  <meta name="google-site-verification" content="cLgmh2Gje5sjxwZhal9j8A9PWdKTjkNAeB8xCqsASBU" />
+
+  <!-- Basic SEO -->
+  <meta name="robots" content="index,follow,max-image-preview:large" />
+  <link rel="canonical" href="https://nthnlgmz.github.io/portfolio/" />
+  <link rel="sitemap" type="application/xml" href="https://nthnlgmz.github.io/portfolio/sitemap.xml" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Nathaniel Gomez — Portfolio" />
+  <meta property="og:description" content="Mechatronics engineer portfolio of Nathaniel Gomez." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://nthnlgmz.github.io/portfolio/" />
+  <meta property="og:site_name" content="Nathaniel Gomez" />
+  <meta property="og:locale" content="en_PH" />
+  <meta property="og:image" content="https://raw.githubusercontent.com/kymiii/test/refs/heads/main/1000008194-removebg.webp" />
+  <meta property="og:image:alt" content="Portrait of Nathaniel Gomez" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Nathaniel Gomez — Portfolio" />
+  <meta name="twitter:description" content="Mechatronics engineer portfolio of Nathaniel Gomez." />
+  <meta name="twitter:image" content="https://raw.githubusercontent.com/kymiii/test/refs/heads/main/1000008194-removebg.webp" />
+
+  <!-- Rel=me -->
+  <link rel="me" href="mailto:nthnlgmz08@gmail.com" />
+  <link rel="me" href="https://www.linkedin.com/in/nthnlgmz" />
+  <link rel="me" href="https://github.com/nthnlgmz" />
+  <link rel="me" href="https://www.facebook.com/nthnlgmz" />
+
+  <!-- Resource Hints -->
+  <link rel="dns-prefetch" href="//raw.githubusercontent.com">
+  <link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin>
+  <link rel="dns-prefetch" href="//fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="dns-prefetch" href="//fonts.gstatic.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="dns-prefetch" href="//www.googletagmanager.com">
+  <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' };
+  </script>
+
+  <!-- Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Eczar:wght@400..800&display=swap" rel="stylesheet">
+
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"Person",
+    "name":"Nathaniel Gomez",
+    "jobTitle":"Mechatronics Engineer",
+    "description":"I design and build smart systems—both physical and digital—that solve everyday problems.",
+    "email":"mailto:nthnlgmz08@gmail.com",
+    "url":"https://nthnlgmz.github.io/portfolio/",
+    "image":"https://raw.githubusercontent.com/kymiii/test/refs/heads/main/1000008194-removebg.webp",
+    "sameAs":[
+      "https://www.linkedin.com/in/nthnlgmz",
+      "https://github.com/nthnlgmz",
+      "https://www.facebook.com/nthnlgmz"
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"WebSite",
+    "name":"Nathaniel Gomez — Portfolio",
+    "url":"https://nthnlgmz.github.io/portfolio/",
+    "potentialAction":{
+      "@type":"SearchAction",
+      "target":"https://nthnlgmz.github.io/portfolio/?q={search_term_string}",
+      "query-input":"required name=search_term_string"
+    }
+  }
+  </script>
+
+  <!-- ====== Inline CSS ====== -->
+  <style>
+    :root {
+      --bg: #fdfefe;
+      --fg: #121316;
+      --grid: rgba(100, 149, 237, 0.08);
+      --grid-strong: rgba(100, 149, 237, 0.12);
+      --card: #ffffff;
+      --card-border: rgba(0, 0, 0, 0.10);
+      --shadow: 0 6px 24px rgba(0, 0, 0, .10);
+      --cell: 56px;
+    }
+    .dark {
+      --bg: #0b0c0f;
+      --fg: #f2f3f5;
+      --grid: rgba(136, 197, 255, 0.10);
+      --grid-strong: rgba(136, 197, 255, 0.16);
+      --card: #111318;
+      --card-border: rgba(255, 255, 255, 0.12);
+      --shadow: 0 10px 30px rgba(0, 0, 0, .45);
+    }
+    html { scroll-behavior: smooth; }
+    #snackbar { max-width: 90%; width: fit-content; }
+    @media (max-width: 640px){ #snackbar{width:90%;} }
+    body {
+      font-family: "Eczar", serif;
+      font-optical-sizing: auto;
+      font-style: normal;
+      margin:0;
+      color:var(--fg);
+      background:
+        linear-gradient(var(--grid) 1px,transparent 1px) 0 0/var(--cell) var(--cell),
+        linear-gradient(90deg,var(--grid) 1px,transparent 1px)0 0/var(--cell) var(--cell),
+        linear-gradient(var(--grid-strong)1px,transparent 1px)0 0/calc(var(--cell)*4)calc(var(--cell)*4),
+        linear-gradient(90deg,var(--grid-strong)1px,transparent 1px)0 0/calc(var(--cell)*4)calc(var(--cell)*4),
+        radial-gradient(100% 60% at 50% 0%,rgba(0,0,0,.05),transparent 60%),
+        radial-gradient(80% 70% at 50% 100%,rgba(0,0,0,.05),transparent 60%),
+        var(--bg);
+      background-attachment:fixed,fixed,fixed,fixed,fixed,fixed,fixed;
+    }
+    .masonry{column-gap:.75rem;}
+    @media(min-width:768px){.masonry{column-count:2;}}
+    @media(min-width:1024px){.masonry{column-count:3;}}
+    .masonry-item{break-inside:avoid;margin-bottom:.75rem;}
+    details[role="list"] summary::-webkit-details-marker{display:none;}
+    details[open][role="list"]>summary svg{transform:rotate(180deg);}
+  </style>
+  </head>
+
+<body class="min-h-screen selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black">
+  <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 rounded bg-black px-3 py-1 text-white dark:bg-white dark:text-black">Skip to content</a>
+
+  <!-- Navbar -->
+  <header id="site-header" class="sticky top-0 z-50 border-b border-zinc-200/70 bg-white/60 backdrop-blur dark:border-zinc-800/70 dark:bg-zinc-900/60">
+    <div class="w-[95%] md:w-[90%] mx-auto flex items-center justify-between px-4 py-3">
+      <a href="#home" class="font-semibold flex items-center space-x-2">
+        <!-- Logo -->
+        <img src="https://raw.githubusercontent.com/kymiii/test/refs/heads/main/logo.webp" alt="Logo" class="w-8 h-8 select-none pointer-events-none" draggable="false" oncontextmenu="return false;" />
+
+        <!-- Name -->
+        <span>Nathaniel Gomez</span>
+      </a>
+      <!-- Desktop nav -->
+      <nav class="hidden md:flex items-center gap-5 text-[15px]">
+        <a href="#about" class="hover:opacity-80">About</a>
+        <a href="#experience" class="hover:opacity-80">Experience</a>
+        <a href="#projects" class="hover:opacity-80">Projects</a>
+        <a href="#contact" class="hover:opacity-80">Contact</a>
+        <details id="moreMenu" role="list" class="relative">
+          <summary class="list-none inline-flex items-center gap-1 cursor-pointer hover:opacity-80">
+            More
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.25a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd" />
+            </svg>
+          </summary>
+          <ul class="absolute right-0 mt-2 w-48 rounded-xl border border-zinc-200 bg-white p-2 text-sm shadow-lg dark:border-zinc-800 dark:bg-zinc-900">
+            <li><a class="block rounded-lg px-3 py-2 hover:bg-zinc-50 dark:hover:bg-zinc-800/60" href="#certs">Certifications</a></li>
+            <li><a class="block rounded-lg px-3 py-2 hover:bg-zinc-50 dark:hover:bg-zinc-800/60" href="#testimonials">Recommendations</a></li>
+          </ul>
+        </details>
+      </nav>
+
+      <!-- Desktop actions -->
+      <div class="hidden md:flex items-center gap-3">
+        <button id="themeToggle" class="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-200 hover:shadow dark:border-zinc-800" aria-label="Toggle theme">🌙</button>
+
+        <a href="https://calendly.com/engr-nathanielgomez/30min" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-zinc-900
+                 bg-gradient-to-b from-white to-zinc-100 ring-1 ring-zinc-200
+                 shadow-[inset_0_1px_0_rgba(255,255,255,.7),0_6px_16px_rgba(0,0,0,.12)]
+                 hover:ring-zinc-300 transition dark:text-white dark:from-zinc-800 dark:to-zinc-700 dark:ring-zinc-700">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3M3 8h18M4 10h16v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-9Z" />
+          </svg>
+          <span>Let’s Talk</span>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M7.293 15.707a1 1 0 010-1.414L11.586 10 7.293 5.707a1 1 0 111.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+          </svg>
+        </a>
+      </div>
+
+      <!-- Mobile: Menu + Theme toggle -->
+      <div class="md:hidden flex items-center gap-2">
+        <button id="menuBtn" class="rounded-lg border border-zinc-200 px-3 py-1.5 text-sm dark:border-zinc-800" aria-controls="mobileMenu" aria-expanded="false">Menu</button>
+        <button id="themeToggleNavMobile" class="rounded-lg border border-zinc-200 px-3 py-1.5 text-sm dark:border-zinc-800" aria-label="Toggle theme">🌙</button>
+      </div>
+    </div>
+
+    <!-- Mobile menu -->
+    <div id="mobileMenu" class="md:hidden hidden border-t border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 backdrop-blur" aria-hidden="true">
+      <nav class="w-[95%] md:w-[90%] mx-auto px-4 py-3 grid gap-2 text-sm">
+        <a href="#about" class="py-2">About</a>
+        <a href="#experience" class="py-2">Experience</a>
+        <a href="#projects" class="py-2">Projects</a>
+        <a href="#certs" class="py-2">Certifications</a>
+        <a href="#testimonials" class="py-2">Recommendations</a>
+        <a href="#contact" class="py-2">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- Hero -->
+    <section id="home" class="relative isolate">
+      <!-- Removed the old radial layer (pattern now lives on body) -->
+
+      <div class="w-[95%] md:w-[90%] mx-auto px-4 py-16 md:py-24">
+        <div class="md:grid md:grid-cols-2 md:items-center md:gap-x-8 md:px-8">
+          <!-- Image + badges under it -->
+          <div class="flex flex-col items-center md:items-start gap-4">
+            <div class="relative w-64 md:w-72 lg:w-80 aspect-square rounded-3xl overflow-hidden border border-zinc-200 dark:border-zinc-700 shadow-inner bg-white/60 dark:bg-black/30 backdrop-blur-sm">
+              <!-- Light image -->
+              <img src="https://raw.githubusercontent.com/kymiii/test/refs/heads/main/1000008194-removebg.webp" alt="Morning portrait" class="block select-none pointer-events-none w-full h-full object-cover dark:hidden" draggable="false" oncontextmenu="return false;" />
+              <!-- Dark image -->
+              <img src="https://raw.githubusercontent.com/kymiii/test/refs/heads/main/IMG_20250912_095458.webp" alt="Night portrait" class="hidden select-none pointer-events-none w-full h-full object-cover dark:block" draggable="false" oncontextmenu="return false;" />
+            </div>
+
+            <!-- badges BELOW the image -->
+            <div class="flex flex-wrap justify-center md:justify-start gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+              <span class="inline-block rounded-full border border-zinc-200 px-3 py-1 bg-white/70 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/60">BOSH SO2</span>
+              <span class="inline-block rounded-full border border-zinc-200 px-3 py-1 bg-white/70 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/60">Mechatronics Engineer</span>
+            </div>
+          </div>
+
+          <!-- Text (right) -->
+          <div class="mt-10 md:mt-0 py-4 md:py-6">
+            <h1 class="text-3xl font-bold flex items-center gap-2">
+              Nathaniel Gomez
+              <img src="https://raw.githubusercontent.com/kymiii/test/refs/heads/main/18290780.png" alt="verified" class="w-5 h-5 select-none pointer-events-none" draggable="false" oncontextmenu="return false;" />
+            </h1>
+            <p class="mt-4 max-w-2xl text-zinc-700 dark:text-zinc-300">
+              I design and build smart systems—both physical and digital—that solve everyday problems.
+            </p>
+            <div class="mt-6 flex flex-wrap gap-3">
+              <!-- Send Email (mailto) -->
+              <a href="mailto:nthnlgmz08@gmail.com" class="rounded-2xl border border-zinc-200 px-4 py-2 text-sm hover:shadow bg-white/70 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/60">
+                Send Email
+              </a>
+
+              <!-- View Resume -->
+              <a href="https://drive.google.com/file/d/18kB2OIFIKPfCXd14O782XRYXWOsaj-Er/view?usp=drivesdk" target="_blank" rel="noopener" class="rounded-2xl border border-zinc-200 px-4 py-2 text-sm hover:shadow bg-white/70 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/60">
+                View Resume
+              </a>
+
+              <a href="https://calendly.com/engr-nathanielgomez/30min" target="_blank" rel="noopener" class="rounded-full bg-black text-white px-5 py-2.5 text-sm hover:opacity-90 dark:bg-white dark:text-black">
+                Let’s Talk
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Masonry Cards -->
+    <section class="w-[95%] md:w-[90%] mx-auto px-4 pb-16">
+      <div class="masonry">
+        <div id="about" class="masonry-item scroll-mt-24 md:scroll-mt-28 rounded-2xl border border-zinc-200 bg-white/80 p-6 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/70">
+          <h2 class="text-xl font-semibold mb-3">About</h2>
+          <p class="text-zinc-700 dark:text-zinc-300 mb-2">Mechatronics Engineering graduate focused on building practical solutions at the intersection of hardware and software.</p>
+          <p class="text-zinc-700 dark:text-zinc-300">I enjoy Arduino/ESP32, web development, and turning ideas into working prototypes.</p>
+        </div>
+
+        <!-- Work -->
+        <div id="experience" class="masonry-item scroll-mt-24 md:scroll-mt-28 rounded-2xl border border-zinc-200 bg-white/80 p-6 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/70">
+          <h2 class="text-xl font-semibold mb-3">Work Experience</h2>
+          <div class="space-y-4 text-sm">
+            <div class="border-b border-zinc-200 pb-2 dark:border-zinc-700">
+              <div class="font-medium">Process Specialist</div>
+              <div class="text-zinc-500 dark:text-zinc-400">Monde Nissin Corporation - Malvar Plant</div>
+              <div class="text-xs text-zinc-500 dark:text-zinc-400">Nov 2024 – Aug 2025</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="masonry-item scroll-mt-24 md:scroll-mt-28 rounded-2xl border border-zinc-200 bg-white/80 p-6 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/70">
+          <h2 class="text-xl font-semibold mb-3">Education</h2>
+          <div class="text-sm">
+            <div class="font-medium">BS in Mechatronics Engineering</div>
+            <div class="text-zinc-500 dark:text-zinc-400">Batangas State University – The National Engineering University (Alangilan)</div>
+            <div class="text-xs text-zinc-500 dark:text-zinc-400">Aug 2020 – Jul 2024</div>
+          </div>
+        </div>
+
+        <!-- Recent Projects -->
+        <div id="projects" class="masonry-item scroll-mt-24 md:scroll-mt-28 rounded-2xl border border-zinc-200 bg-white/80 p-6 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/70">
+          <h2 class="text-xl font-semibold mb-3">Recent Projects</h2>
+
+          <!-- Project 2 -->
+          <a href="https://www.anilaodivingandphotography.com/" target="_blank" rel="noreferrer" class="mt-3 block rounded-xl border border-zinc-200 p-5 hover:shadow transition bg-white/70 backdrop-blur dark:border-zinc-700 dark:bg-zinc-900/60 dark:hover:border-zinc-600">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <h3 class="font-semibold text-lg">Anilao Diving & Photography</h3><div class="font-semibold text-lg">Anilao Diving & Photography</div>
+                <div class="text-sm text-zinc-600 dark:text-zinc-400">Diving Website</div>
+              </div>
+              <span class="inline-block rounded-full border border-zinc-200 px-3 py-1 text-xs leading-none bg-white/70 dark:border-zinc-700 dark:bg-zinc-900/60">Visit</span>
+            </div>
+            <div class="mt-3 flex flex-wrap gap-2">
+              <span class="inline-flex items-center rounded-xl bg-zinc-100 px-3 py-1 text-sm font-medium text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200">HTML</span>
+              <span class="inline-flex items-center rounded-xl bg-zinc-100 px-3 py-1 text-sm font-medium text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200">CSS</span>
+              <span class="inline-flex items-center rounded-xl bg-zinc-100 px-3 py-1 text-sm font-medium text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200">JS</span>
+            </div>
+          </a>
+
+          <!-- Project 1 -->
+          <div onclick="showSnackbar()" class="mt-[20px] cursor-pointer block rounded-xl border border-zinc-200 p-5 hover:shadow transition bg-white/70 backdrop-blur dark:border-zinc-700 dark:bg-zinc-900/60 dark:hover:border-zinc-600" role="button" tabindex="0" aria-label="Open details for AutoPour Pub — Bartending Machine">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <h3 class="font-semibold text-lg">AutoPour Pub</h3><div class="font-semibold text-lg">AutoPour Pub</div>
+                <div class="text-sm text-zinc-600 dark:text-zinc-400">Bartending Machine</div>
+              </div>
+              <span class="inline-block rounded-full border border-zinc-200 px-3 py-1 text-xs leading-none bg-white/70 dark:border-zinc-700 dark:bg-zinc-900/60">No Preview</span>
+            </div>
+            <div class="mt-3 flex flex-wrap gap-2">
+              <span class="inline-flex items-center rounded-xl bg-zinc-100 px-3 py-1 text-sm font-medium text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200">C++</span>
+              <span class="inline-flex items-center rounded-xl bg-zinc-100 px-3 py-1 text-sm font-medium text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200">ESP32</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Side Projects -->
+        <div id="side-projects" class="masonry-item scroll-mt-24 md:scroll-mt-28 rounded-2xl border border-zinc-200 bg-white/80 p-6 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/70">
+          <h2 class="text-xl font-semibold mb-3">Side Projects</h2>
+
+          <!-- Periodic Table Quiz Trainer -->
+          <a href="https://sites.google.com/view/learnperiodictable/home" target="_blank" rel="noopener" class="block rounded-xl border border-zinc-200 p-5 hover:shadow transition bg-white/70 backdrop-blur dark:border-zinc-700 dark:bg-zinc-900/60 dark:hover:border-zinc-600">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <div class="font-semibold text-lg">Periodic Table Quiz Trainer</div>
+                <div class="text-sm text-zinc-600 dark:text-zinc-400">
+                  An interactive quiz app to help learners memorize the periodic table in a fun and engaging way.
+                </div>
+              </div>
+              <span class="inline-block rounded-full border border-zinc-200 px-3 py-1 text-xs leading-none bg-white/70 dark:border-zinc-700 dark:bg-zinc-900/60">Visit</span>
+            </div>
+            <div class="mt-3 flex flex-wrap gap-2">
+              <span class="inline-flex items-center rounded-xl bg-zinc-100 px-3 py-1 text-sm font-medium text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200">HTML</span>
+              <span class="inline-flex items-center rounded-xl bg-zinc-100 px-3 py-1 text-sm font-medium text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200">CSS</span>
+              <span class="inline-flex items-center rounded-xl bg-zinc-100 px-3 py-1 text-sm font-medium text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200">JS</span>
+            </div>
+          </a>
+        </div>
+
+        <!-- Certifications -->
+        <div id="certs" class="masonry-item scroll-mt-24 md:scroll-mt-28 rounded-2xl border border-zinc-200 bg-white/80 p-6 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/70">
+          <h2 class="text-xl font-semibold mb-3">Certifications</h2>
+          <div class="space-y-3 text-sm">
+            <div class="rounded-lg border border-zinc-200 p-4 bg-white/70 backdrop-blur dark:border-zinc-700 dark:bg-zinc-900/60">
+              <div class="font-medium">BOSH SO2</div>
+              <div class="text-zinc-600 dark:text-zinc-400">Mastery Consultancy-OPC</div>
+              <a class="mt-2 inline-block rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-800 hover:opacity-90 dark:bg-zinc-800 dark:text-zinc-200" href="https://drive.google.com/file/d/1DbCnfKrJVt66ICPHRnO7-xwJ9t8LbV9i/view?usp=drivesdk" target="_blank" rel="noreferrer">
+                View credential
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div id="testimonials" class="masonry-item scroll-mt-24 md:scroll-mt-28 rounded-2xl border border-zinc-200 bg-white/80 p-6 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/70">
+          <h2 class="text-xl font-semibold mb-3">Recommendations</h2>
+          <p class="text-zinc-700 dark:text-zinc-300">“Professional, attentive to detail, and brought the vision to life. The site looks fantastic and runs smoothly—already attracting more visitors.”</p>
+          <div class="mt-3 text-xs text-zinc-500 dark:text-zinc-400">Rene Camacho — Client</div>
+        </div>
+
+        <div id="contact" class="masonry-item scroll-mt-24 md:scroll-mt-28 rounded-2xl border border-zinc-200 bg-white/80 p-6 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/70">
+          <h2 class="text-xl font-semibold mb-3">Get in touch</h2>
+          <p class="text-sm text-zinc-600 dark:text-zinc-400 mb-2">Email</p>
+          <a href="mailto:nthnlgmz08@gmail.com" class="text-sm font-medium block mb-4">nthnlgmz08@gmail.com</a>
+          <p class="text-sm text-zinc-600 dark:text-zinc-400 mb-1">Social Links</p>
+
+          <div class="flex flex-wrap gap-3">
+            <!-- LinkedIn -->
+            <a href="https://www.linkedin.com/in/nthnlgmz" target="_blank" class="flex items-center gap-2 rounded-full border border-zinc-200 px-3 py-1 text-sm hover:shadow bg-white/70 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/60">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M4.98 3.5C4.98 4.6 4.1 5.5 3 5.5S1 4.6 1 3.5 1.9 1.5 3 1.5 4.98 2.4 4.98 3.5zM1 22h4V7H1v15zM8 7v15h4v-8.2c0-2.1 1.7-2.4 2.4-2.4 1 0 2 .7 2 2.3V22h4v-9.1c0-4.3-2.3-6.4-5.3-6.4-2.4 0-3.5 1.3-4.1 2.2h-.1V7H8z" />
+              </svg>
+              LinkedIn
+            </a>
+
+            <!-- GitHub -->
+            <a href="https://github.com/nthnlgmz" target="_blank" class="flex items-center gap-2 rounded-full border border-zinc-200 px-3 py-1 text-sm hover:shadow bg-white/70 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/60">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.3.8-.6v-2.2c-3.2.7-3.9-1.5-3.9-1.5-.6-1.5-1.4-1.9-1.4-1.9-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 .1.7 2.1 3.5 2.1 2.8 0 3.3-2 3.3-2 .5-1.1.9-1.5.9-1.5-2.6-.3-5.4-1.3-5.4-6a4.6 4.6 0 011.2-3.2c-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2a11 11 0 016 0c2.3-1.5 3.3-1.2 3.3-1.2.6 1.6.2 2.8.1 3.1a4.6 4.6 0 011.2 3.2c0 4.7-2.8 5.7-5.5 6 .5.4 1 1.3 1 2.6v3.9c0 .3.2.7.8.6A11.5 11.5 0 0023.5 12C23.5 5.65 18.35.5 12 .5z" />
+              </svg>
+              GitHub
+            </a>
+
+            <!-- Facebook -->
+            <a href="https://www.facebook.com/nthnlgmz" target="_blank" class="flex items-center gap-2 rounded-full border border-zinc-200 px-3 py-1 text-sm hover:shadow bg-white/70 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/60">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2.04c-5.5 0-9.96 4.46-9.96 9.96 0 4.99 3.66 9.12 8.44 9.88v-7H8.1V12h2.4V9.8c0-2.4 1.4-3.7 3.5-3.7 1 0 2 .1 2 .1v2.3h-1.1c-1.1 0-1.4.7-1.4 1.4V12h2.5l-.4 2.9h-2.1v7c4.8-.8 8.4-4.9 8.4-9.9 0-5.5-4.5-10-10-10z" />
+              </svg>
+              Facebook
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <!-- Footer -->
+  <footer class="py-10 border-t border-zinc-200/70 dark:border-zinc-800/70 bg-white/60 dark:bg-zinc-900/60 backdrop-blur">
+    <div class="w-[95%] md:w-[90%] mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="text-sm text-zinc-700 dark:text-zinc-300">© <span id="year"></span> Nathaniel Gomez. All rights reserved.</div>
+      <div class="text-sm"></div>
+    </div>
+  </footer>
+
+  <script>
+    // Register service worker
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("sw.js").catch(() => {});
+    }
+
+    // Theme init
+    (function() {
+      const stored = localStorage.getItem("theme");
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      if (stored === "dark" || (!stored && prefersDark)) {
+        document.documentElement.classList.add("dark");
+      }
+    })();
+
+    // Mobile menu toggle + auto-close after click
+    const menuBtn = document.getElementById("menuBtn");
+    const mobileMenu = document.getElementById("mobileMenu");
+    menuBtn?.addEventListener("click", () => {
+      const isHidden = mobileMenu.classList.toggle("hidden");
+      mobileMenu.setAttribute("aria-hidden", isHidden ? "true" : "false");
+      menuBtn.setAttribute("aria-expanded", isHidden ? "false" : "true");
+    });
+    mobileMenu?.querySelectorAll('a[href^="#"]').forEach((a) => {
+      a.addEventListener("click", () => { mobileMenu.classList.add("hidden"); mobileMenu.setAttribute("aria-hidden","true"); menuBtn.setAttribute("aria-expanded","false"); });
+    });
+
+    
+    // Accessibility: allow Enter/Space to activate the no-preview project card
+    document.querySelectorAll('div[onclick="showSnackbar()"][role="button"]').forEach((el) => {
+      el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          el.click();
+        }
+      });
+    });
+
+    // Auto year
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    // Theme toggles (desktop + mobile-nav)
+    const toggles = [document.getElementById("themeToggle"), document.getElementById("themeToggleNavMobile")];
+
+    const setIcon = () => {
+      const isDark = document.documentElement.classList.contains("dark");
+      toggles.forEach((b) => b && (b.textContent = isDark ? "🌞" : "🌙"));
+    };
+    toggles.forEach((btn) => {
+      if (btn) {
+        btn.addEventListener("click", () => {
+          document.documentElement.classList.toggle("dark");
+          localStorage.setItem("theme", document.documentElement.classList.contains("dark") ? "dark" : "light");
+          setIcon();
+          // Added: sync meta theme-color for better PWA/SEO polish
+          const themeMeta = document.querySelector('meta[name="theme-color"]');
+          if (themeMeta) themeMeta.setAttribute("content", document.documentElement.classList.contains("dark") ? "#0b0c0f" : "#fdfefe");
+        });
+      }
+    });
+    setIcon();
+
+    // Smooth scroll with sticky-header offset
+    (function() {
+      const header = document.getElementById("site-header");
+      const links = document.querySelectorAll('a[href^="#"]');
+      links.forEach((link) => {
+        link.addEventListener("click", (e) => {
+          const id = link.getAttribute("href");
+          if (!id || id === "#") return;
+          const target = document.querySelector(id);
+          if (!target) return;
+          e.preventDefault();
+          const headerH = header.offsetHeight || 0;
+          const extra = 8;
+          const top = target.getBoundingClientRect().top + window.scrollY - headerH - extra;
+          const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+          window.scrollTo({
+            top,
+            behavior: reduceMotion ? "auto" : "smooth"
+          });
+        });
+      });
+    })();
+
+    // Auto-close "More" dropdown after click
+    const moreMenu = document.getElementById("moreMenu");
+    moreMenu?.querySelectorAll("a").forEach((link) => {
+      link.addEventListener("click", () => {
+        moreMenu.removeAttribute("open");
+      });
+    });
+  </script>
+
+  <!-- Snackbar -->
+  <div id="snackbar" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-zinc-900 text-white text-sm px-4 py-2 rounded-lg shadow-lg opacity-0 pointer-events-none transition-opacity duration-300 dark:bg-zinc-100 dark:text-black" role="status" aria-live="polite">
+    Sorry, there’s no online preview available for this hardware project.
+  </div>
+
+  <script>
+    function showSnackbar() {
+      const sb = document.getElementById('snackbar');
+      sb.classList.remove('opacity-0', 'pointer-events-none');
+      setTimeout(() => {
+        sb.classList.add('opacity-0', 'pointer-events-none');
+      }, 3000); // visible for 3 seconds
+    }
+  </script>
+</body>
+
+</html>
