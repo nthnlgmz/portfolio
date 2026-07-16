@@ -189,6 +189,10 @@
 
   /* counter */
   .ctr-body{width:100%; display:flex; flex-direction:column; gap:4px; font-size:10px;}
+  .ctr-row{display:flex; align-items:center; justify-content:space-between; gap:6px;}
+  .ctr-row label{color:var(--muted); font-size:9.5px;}
+  .ctr-row .mini-lamp{width:10px;height:10px;border-radius:50%; background:#3a2222; border:1px solid #522c2c; flex-shrink:0;}
+  .ctr-row .mini-lamp.on{background:var(--danger); box-shadow:0 0 6px var(--danger);}
   .ctr-reset{
     align-self:flex-start; font-family:'Oswald',sans-serif; letter-spacing:.05em; text-transform:uppercase;
     font-size:9px; color:var(--muted); background:#20262a; border:1px solid var(--line); border-radius:2px;
@@ -554,7 +558,7 @@
         <code>CTR1.PV = 5</code> <span style="color:#666">// preset count, numeric only</span><br>
         <code>REL1.SET = PB1</code> · <code>REL1.RESET = PB2</code> <span style="color:#666">// SET/RESET latch inputs</span><br>
         <code>AND1 = PB1 AND SW1</code> · <code>NOT1 = NOT (PB1)</code> · <code>XOR1 = PB1 XOR SW1</code><br>
-        Timer On (TMR) delays turning <b>on</b>; Timer Off (TOF) delays turning <b>off</b>; Counter (CTR) counts rising edges on IN and compares CV to PV using its <b>≥ / ≤ / =</b> dropdown.<br>
+        Timer On (TMR) delays turning <b>on</b>; Timer Off (TOF) delays turning <b>off</b>; Counter (CTR) counts rising edges on IN and compares CV to PV using its <b>≥ / ≤ / =</b> dropdown. Its wired RESET input forces CV back to 0 and inhibits counting while live — same idea as Relay's SET/RESET, plus a manual "Reset CV" button for a no-wiring reset.<br>
         Relay (REL) is a SET/RESET latch: SET drives Q true, RESET drives Q false, and Q holds its last state when neither is live. Its dropdown picks which one wins if both are live at once (default: Reset dominant).<br>
         Lamp and Motor outputs each have an output terminal too, so you can wire one into another gate, timer, counter, or output.<br>
         E-Stop (EST) behaves like a latching switch, wired the same way as a Toggle — tap once to trip it (output goes false), tap again to reset.<br>
@@ -644,7 +648,7 @@
 <script>
 (function(){
   const BLOCK_W = 150, BLOCK_H = 92;
-  const BLOCK_H_OVERRIDE = {LMP: 128, CTR: 148, EST: 118, REL: 156}; // lamp needs extra room for the color swatch + blink row; counter for the mode select, live count + reset button; e-stop for its round button; relay for two labeled ports + mode + reset button
+  const BLOCK_H_OVERRIDE = {LMP: 128, CTR: 176, EST: 118, REL: 156}; // lamp needs extra room for the color swatch + blink row; counter for the mode select, live count, wired reset row + reset button; e-stop for its round button; relay for two labeled ports + mode + reset button
   function blockH(type){ return BLOCK_H_OVERRIDE[type] || BLOCK_H; }
   const CANVAS_W = 2200, CANVAS_H = 1400;
   const TYPE_COLOR = {PB:'var(--pb)', PBN:'var(--pbn)', SW:'var(--sw)', EST:'var(--est)', LMP:'var(--lmp)', MTR:'var(--mtr)', TMR:'var(--tmr)', TOF:'var(--tof)', CTR:'var(--ctr)', REL:'var(--rel)', AND:'var(--gate)', OR:'var(--gate)', NOT:'var(--gate)', XOR:'var(--gate)'};
@@ -715,9 +719,10 @@
 
   function termPos(comp, side, port){
     // side: 'input' -> left edge, 'output' -> right edge
-    // REL has two input ports (SET / RESET) stacked instead of one centered terminal
+    // REL has two input ports (SET / RESET) stacked instead of one centered terminal;
+    // CTR has two input ports too (IN / RESET) for the same reason.
     let y;
-    if(comp.type === 'REL' && side === 'input'){
+    if((comp.type === 'REL' || comp.type === 'CTR') && side === 'input'){
       y = comp.y + blockH(comp.type) * (port === 'RESET' ? 0.72 : 0.34);
     } else {
       y = comp.y + blockH(comp.type)/2;
@@ -1095,14 +1100,23 @@
       reset.type = 'button';
       reset.className = 'ctr-reset';
       reset.textContent = 'Reset CV';
+      reset.title = 'Manually force CV to 0, independent of any wired RESET input';
       reset.addEventListener('pointerdown', e => e.stopPropagation());
       reset.addEventListener('click', () => { comp.CV = 0; comp.Q = false; comp._prevIN = false; pulseNow(); });
-      tb.appendChild(row1); tb.appendChild(rowMode); tb.appendChild(countRow); tb.appendChild(bar); tb.appendChild(row2); tb.appendChild(reset);
+      const rowRst = document.createElement('div');
+      rowRst.className = 'ctr-row';
+      const rstLamp = document.createElement('div');
+      rstLamp.className = 'mini-lamp';
+      const rstLbl = document.createElement('label');
+      rstLbl.textContent = 'RESET';
+      rowRst.appendChild(rstLamp); rowRst.appendChild(rstLbl);
+      tb.appendChild(row1); tb.appendChild(rowMode); tb.appendChild(countRow); tb.appendChild(bar); tb.appendChild(row2); tb.appendChild(reset); tb.appendChild(rowRst);
       body.appendChild(tb);
-      comp._fillEl = fill; comp._miniEl = mini; comp._countEl = countRow;
-      const tin = makeTerminal(comp, 'input');
+      comp._fillEl = fill; comp._miniEl = mini; comp._countEl = countRow; comp._rstLampEl = rstLamp;
+      const tin = makeTerminal(comp, 'input', 'IN');
+      const trst = makeTerminal(comp, 'input', 'RESET');
       const tout = makeTerminal(comp, 'output');
-      el.appendChild(tin); el.appendChild(tout);
+      el.appendChild(tin); el.appendChild(trst); el.appendChild(tout);
     }
 
     if(comp.type === 'REL'){
@@ -1207,7 +1221,7 @@
     t.dataset.side = side;
     if(port){
       t.dataset.port = port;
-      const pct = (comp.type === 'REL' && side === 'input') ? (port === 'RESET' ? 72 : 34) : 50;
+      const pct = ((comp.type === 'REL' || comp.type === 'CTR') && side === 'input') ? (port === 'RESET' ? 72 : 34) : 50;
       t.style.top = pct + '%';
     }
     t.addEventListener('pointerdown', e => e.stopPropagation());
@@ -1504,10 +1518,12 @@
       lines.push('// Counter presets');
       counters.forEach(c => lines.push(`${c.id}.PV = ${c.PV}`));
       lines.push('');
-      lines.push('// Counter inputs');
+      lines.push('// Counter inputs (IN counts rising edges, RESET forces CV to 0)');
       counters.forEach(c => {
-        const ins = wires.filter(w => w.to === c.id).map(w => w.from);
+        const ins = wires.filter(w => w.to === c.id && w.toPort !== 'RESET').map(w => w.from);
+        const rstIns = wires.filter(w => w.to === c.id && w.toPort === 'RESET').map(w => w.from);
         if(ins.length) lines.push(`${c.id}.IN = ${ins.join(' OR ')}`);
+        if(rstIns.length) lines.push(`${c.id}.RESET = ${rstIns.join(' OR ')}`);
       });
       lines.push('');
     }
@@ -1633,16 +1649,20 @@
           c.ET = Math.min((c.ET || 0) + dt, c.PT || 0);
           c.Q = c.PT > 0 ? (c.ET < c.PT) : false;
         }
-      } else if(c.type === 'CTR'){ // count-up: CV increments on each rising edge of IN, Q compares CV to PV per selected mode — but only while IN is live
-        const inNow = !!c.IN;
-        if(inNow && !c._prevIN) c.CV = (c.CV || 0) + 1;
-        c._prevIN = inNow;
-        const cv = c.CV || 0, pv = c.PV || 0;
-        let satisfied;
-        if(c.mode === 'lte') satisfied = cv <= pv;
-        else if(c.mode === 'eq') satisfied = cv === pv;
-        else satisfied = pv > 0 && cv >= pv; // default 'gte'
-        c.Q = inNow && satisfied; // CV keeps its count, but Q drops as soon as the source goes dead
+      } else if(c.type === 'CTR'){ // count-up: CV increments on each rising edge of IN, Q compares CV to PV per selected mode — but only while IN is live. A live RESET forces CV to 0 and inhibits counting, same as a real CTU's async reset.
+        if(c.RESET){
+          c.CV = 0; c.Q = false; c._prevIN = false;
+        } else {
+          const inNow = !!c.IN;
+          if(inNow && !c._prevIN) c.CV = (c.CV || 0) + 1;
+          c._prevIN = inNow;
+          const cv = c.CV || 0, pv = c.PV || 0;
+          let satisfied;
+          if(c.mode === 'lte') satisfied = cv <= pv;
+          else if(c.mode === 'eq') satisfied = cv === pv;
+          else satisfied = pv > 0 && cv >= pv; // default 'gte'
+          c.Q = inNow && satisfied; // CV keeps its count, but Q drops as soon as the source goes dead
+        }
       } else if(c.type === 'REL'){ // SR latch: SET/RESET hold Q while live; when neither is live, Q stays latched at its last value
         const setNow = !!c.SET, rstNow = !!c.RESET;
         if((c.mode || 'reset') === 'set'){ // set-dominant: SET wins if both are live at once
@@ -1697,6 +1717,7 @@
         if(c._fillEl) c._fillEl.style.width = (c.PV > 0 ? Math.min(100, (c.CV / c.PV) * 100) : 0) + '%';
         if(c._miniEl) c._miniEl.classList.toggle('on', !!c.Q);
         if(c._countEl) c._countEl.innerHTML = 'Count: <b>' + (c.CV || 0) + '</b>';
+        if(c._rstLampEl) c._rstLampEl.classList.toggle('on', !!c.RESET);
       }
       if(GATE_TYPES.includes(c.type) && c._gateLampEl){
         c._gateLampEl.classList.toggle('on', !!c.value);
