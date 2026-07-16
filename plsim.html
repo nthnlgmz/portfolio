@@ -1,0 +1,2014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Ladder Bench — PLC Simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#14171a;
+    --bg2:#0f1113;
+    --panel:#1d2224;
+    --panel2:#252b2d;
+    --line:#343b3d;
+    --line-soft:#2a3032;
+    --text:#e9e6df;
+    --muted:#8f9799;
+    --pb:#4da3ff;
+    --sw:#37c2a0;
+    --lmp:#ffb347;
+    --tmr:#b98cff;
+    --tof:#ff8fb3;
+    --gate:#5cd6e0;
+    --danger:#ff5a5f;
+    --ok:#37c2a0;
+    --pbn:#e0779c;
+    --ctr:#ffa94d;
+    --mtr:#8fbf6f;
+    --est:#ff3b3b;
+    --rel:#5cb3ff;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:'JetBrains Mono',monospace;overflow:hidden;}
+  body{
+    background-image:
+      repeating-linear-gradient(115deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 5px),
+      radial-gradient(ellipse at 20% -10%, #1c2124 0%, var(--bg) 55%);
+  }
+  h1,h2,h3,.display{font-family:'Oswald',sans-serif; text-transform:uppercase; letter-spacing:.06em;}
+
+  /* ---------- layout shell ---------- */
+  .app{display:flex; flex-direction:column; height:100vh;}
+  .topbar{
+    display:flex; align-items:center; gap:18px;
+    padding:10px 18px; background:linear-gradient(180deg,#22282a,#1a1f21);
+    border-bottom:2px solid var(--line); flex-shrink:0;
+  }
+  .brand{display:flex; align-items:center; gap:10px;}
+  .brand .bolt{width:10px;height:10px;border-radius:50%;background:var(--lmp);box-shadow:0 0 8px var(--lmp), 0 0 2px #fff inset; animation:idle-pulse 2.6s ease-in-out infinite;}
+  @keyframes idle-pulse{0%,100%{opacity:.55}50%{opacity:1}}
+  .brand h1{font-size:20px; margin:0; font-weight:700; color:#f2efe9;}
+  .brand span{color:var(--muted); font-size:11px; font-family:'JetBrains Mono',monospace; letter-spacing:.08em;}
+
+  .topbar .spacer{flex:1;}
+  .status-pill{
+    display:flex; align-items:center; gap:8px; padding:6px 12px; border-radius:3px;
+    background:var(--panel2); border:1px solid var(--line); font-size:11px; letter-spacing:.08em;
+  }
+  .status-pill .dot{width:8px;height:8px;border-radius:50%; background:var(--muted);}
+  .status-pill.run .dot{background:var(--ok); box-shadow:0 0 6px var(--ok);}
+  .status-pill.pause .dot{background:var(--danger); box-shadow:0 0 6px var(--danger);}
+
+  button.ctrl{
+    font-family:'Oswald',sans-serif; letter-spacing:.05em; text-transform:uppercase; font-size:12px; font-weight:600;
+    background:var(--panel2); color:var(--text); border:1px solid var(--line); border-radius:3px;
+    padding:8px 14px; cursor:pointer; transition:all .15s ease;
+  }
+  button.ctrl:hover{border-color:#565f61; background:#2b3234;}
+  button.ctrl:active{transform:translateY(1px);}
+  button.ctrl.accent{border-color:var(--lmp); color:var(--lmp);}
+  button.ctrl.accent:hover{background:rgba(255,179,71,0.1);}
+  button.ctrl.danger{border-color:var(--danger); color:var(--danger);}
+  button.ctrl.danger:hover{background:rgba(255,90,95,0.1);}
+
+  .main{display:flex; flex:1; min-height:0;}
+
+  /* ---------- palette ---------- */
+  .palette{
+    width:168px; flex-shrink:0; background:var(--panel); border-right:2px solid var(--line);
+    padding:14px 10px; overflow-y:auto;
+  }
+  .palette h3{font-size:11px; color:var(--muted); margin:4px 4px 10px; letter-spacing:.12em;}
+  .ptile{
+    display:flex; align-items:center; gap:10px; padding:10px 10px; margin-bottom:8px;
+    background:var(--panel2); border:1px solid var(--line); border-left:3px solid var(--tile-color,#666);
+    border-radius:3px; cursor:pointer; transition:transform .12s ease, background .12s ease;
+  }
+  .ptile:hover{background:#2c3234; transform:translateX(2px);}
+  .ptile .icon{width:26px;height:26px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;font-family:'Oswald',sans-serif; flex-shrink:0;}
+  .ptile .label{font-size:11.5px; line-height:1.25;}
+  .ptile .label small{display:block; color:var(--muted); font-size:9.5px; letter-spacing:.04em;}
+
+  .palette .divider{height:1px; background:var(--line); margin:16px 4px;}
+  .legend{font-size:10px; color:var(--muted); padding:0 4px; line-height:1.6;}
+  .legend code{color:#c9d4d6;}
+
+  /* ---------- workspace ---------- */
+  .workspace-wrap{flex:1; position:relative; overflow:auto; background:var(--bg2); touch-action:pan-x pan-y;}
+  .workspace{
+    position:relative; width:2200px; height:1400px;
+    background-image: radial-gradient(circle, #2a3133 1px, transparent 1px);
+    background-size:26px 26px;
+  }
+  svg.wires{position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;}
+  .wire{fill:none; stroke:#4a5254; stroke-width:2.5; transition:stroke .15s ease;}
+  .wire.energized{stroke:var(--lmp); stroke-width:3; filter:drop-shadow(0 0 4px rgba(255,179,71,.8)); stroke-dasharray:8 6; animation:flow 0.6s linear infinite;}
+  @keyframes flow{to{stroke-dashoffset:-14;}}
+  .wire-del{pointer-events:auto; cursor:pointer;}
+  .wire-del circle{fill:#2a2f31; stroke:var(--line); stroke-width:1;}
+  .wire-del text{fill:var(--muted); font-size:11px; font-family:'JetBrains Mono',monospace; text-anchor:middle; dominant-baseline:central; pointer-events:none;}
+  .wire-del:hover circle{fill:var(--danger); stroke:var(--danger);}
+  .wire-del:hover text{fill:#fff;}
+  .draft-wire{stroke:#8a9497; stroke-dasharray:5 5; stroke-width:2;}
+
+  .block{
+    position:absolute; width:150px; height:92px; background:var(--panel);
+    border:1px solid var(--line); border-radius:5px; box-shadow:0 3px 10px rgba(0,0,0,.4);
+    user-select:none;
+  }
+  .block .head{
+    display:flex; align-items:center; justify-content:space-between; padding:4px 8px;
+    background:var(--panel2); border-bottom:1px solid var(--line); cursor:grab;
+    border-radius:5px 5px 0 0; border-left:3px solid var(--type-color,#777);
+    touch-action:none; -webkit-touch-callout:none; -webkit-user-select:none;
+  }
+  .block .head:active{cursor:grabbing;}
+  .block .head .id{font-size:11px; font-weight:700; color:var(--type-color,#ddd); letter-spacing:.03em;}
+  .block .head .del{font-size:13px; color:var(--muted); cursor:pointer; padding:0 3px; line-height:1;}
+  .block .head .del:hover{color:var(--danger);}
+  .block .body{position:relative; height:calc(100% - 27px); display:flex; align-items:center; justify-content:center; padding:6px;}
+
+  .terminal{
+    position:absolute; width:20px; height:20px; border-radius:50%; top:50%; transform:translateY(-50%);
+    background:#2a3133; border:2px solid #565f61; cursor:crosshair; z-index:5;
+    touch-action:none; -webkit-touch-callout:none;
+  }
+  .terminal.input{left:-10px;}
+  .terminal.output{right:-10px;}
+  .terminal:hover{border-color:#fff; box-shadow:0 0 6px rgba(255,255,255,.4);}
+  .terminal.active-t{border-color:var(--lmp); box-shadow:0 0 8px var(--lmp);}
+
+  /* pushbutton / switch */
+  .pb-face, .sw-face{
+    width:100%; height:100%; border-radius:4px; display:flex; align-items:center; justify-content:center;
+    font-family:'Oswald',sans-serif; font-size:11px; letter-spacing:.05em; color:var(--muted);
+    background:linear-gradient(180deg,#2a3133,#20262a); border:1px solid #3a4143; cursor:pointer;
+    transition:all .08s ease; touch-action:none; -webkit-touch-callout:none; -webkit-user-select:none;
+  }
+  .pb-face:active, .pb-face.pressed{background:linear-gradient(180deg,#3a2a1a,#2a2016); border-color:var(--pb); color:#cfe6ff; box-shadow:inset 0 0 12px rgba(77,163,255,.5), 0 0 10px rgba(77,163,255,.35);}
+  .sw-face.on{background:linear-gradient(180deg,#1a3a30,#16281f); border-color:var(--sw); color:#c9fff0; box-shadow:inset 0 0 12px rgba(55,194,160,.5), 0 0 10px rgba(55,194,160,.35);}
+  .pbn-face{border-color:#4a3540; color:var(--muted);}
+  .pbn-face:not(.pressed){box-shadow:inset 0 0 10px rgba(224,119,156,.35); border-color:var(--pbn); color:#ffd7e6;}
+  .pbn-face:active, .pbn-face.pressed{background:linear-gradient(180deg,#241a1e,#1c1518); border-color:#5a4148; color:var(--muted); box-shadow:none;}
+
+  /* emergency stop (latching, SW-style) */
+  .est-face{
+    border-radius:50%; width:64px; height:64px; margin:0 auto; flex-direction:column; gap:2px;
+    background:radial-gradient(circle at 35% 30%, #ff6b6b, #a30f14); border:3px solid #6e1013;
+    box-shadow:0 0 0 3px #2a1416, 0 3px 8px rgba(0,0,0,.5); color:#fff; font-weight:700;
+  }
+  .est-face .est-txt{font-family:'Oswald',sans-serif; font-size:9px; letter-spacing:.05em;}
+  .est-face.tripped{
+    background:radial-gradient(circle at 35% 30%, #ffdcdc, var(--est)); border-color:#ffb3b3;
+    box-shadow:0 0 0 3px #2a1416, 0 0 16px 4px rgba(255,59,59,.75);
+    animation:est-flash 1s ease-in-out infinite;
+  }
+  @keyframes est-flash{0%,100%{filter:brightness(1)}50%{filter:brightness(1.35)}}
+  .est-wrap{width:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; height:100%;}
+  .est-label{font-size:9.5px; color:var(--muted); letter-spacing:.05em; text-align:center;}
+
+  /* rename-in-place */
+  .block .head .id{cursor:text;}
+  .block .head .id-input{
+    width:70px; font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:700;
+    background:#101314; color:var(--text); border:1px solid var(--lmp); border-radius:2px; padding:0 2px;
+  }
+
+  /* lamp blink control */
+  .lamp-blink{display:flex; align-items:center; gap:4px; margin-top:2px;}
+  .lamp-blink label{font-size:8.5px; color:var(--muted); letter-spacing:.03em; cursor:pointer; user-select:none;}
+  .lamp-blink input{width:11px; height:11px; cursor:pointer; accent-color:var(--lmp); margin:0;}
+  .lamp.lit.blinking{animation:lamp-blink-anim 0.6s steps(1) infinite;}
+  @keyframes lamp-blink-anim{0%,49%{opacity:1;}50%,100%{opacity:.15;}}
+
+  /* counter live count readout */
+  .ctr-count{font-size:10px; color:var(--text); letter-spacing:.03em;}
+  .ctr-count b{color:var(--ctr);}
+
+  /* counter */
+  .ctr-body{width:100%; display:flex; flex-direction:column; gap:4px; font-size:10px;}
+  .ctr-reset{
+    align-self:flex-start; font-family:'Oswald',sans-serif; letter-spacing:.05em; text-transform:uppercase;
+    font-size:9px; color:var(--muted); background:#20262a; border:1px solid var(--line); border-radius:2px;
+    padding:2px 7px; cursor:pointer; touch-action:manipulation;
+  }
+  .ctr-reset:hover{color:var(--text); border-color:#565f61;}
+  .ctr-mode{
+    background:#20262a; border:1px solid var(--line); color:var(--text); border-radius:2px;
+    font-family:'JetBrains Mono',monospace; font-size:9.5px; padding:2px 3px; width:100%;
+  }
+
+  /* motor */
+  .mtr-wrap{display:flex; flex-direction:column; align-items:center; gap:6px;}
+  .mtr-ring{
+    width:36px; height:36px; border-radius:50%; position:relative;
+    background:radial-gradient(circle at 35% 30%, #2c3830, #1a211c);
+    border:3px solid #3d4a3f; display:flex; align-items:center; justify-content:center;
+  }
+  .mtr-ring::before{
+    content:''; position:absolute; inset:-3px; border-radius:50%;
+    border:3px solid transparent; border-top-color:var(--mtr); border-right-color:var(--mtr);
+    opacity:0; transition:opacity .15s ease;
+  }
+  .mtr-ring.running::before{ opacity:1; animation:mtr-spin .8s linear infinite; }
+  .mtr-ring.running{ background:radial-gradient(circle at 35% 30%, #4a7a3e, var(--mtr)); border-color:#a6d98c; box-shadow:0 0 14px 2px rgba(143,191,111,.6); }
+  .mtr-ring .mtr-glyph{ font-family:'Oswald',sans-serif; font-weight:700; font-size:12px; color:var(--muted); }
+  .mtr-ring.running .mtr-glyph{ color:#eafce0; }
+  @keyframes mtr-spin{ to{ transform:rotate(360deg); } }
+  .mtr-label{font-size:9.5px; color:var(--muted); letter-spacing:.05em;}
+
+  /* lamp */
+  .lamp-wrap{display:flex; flex-direction:column; align-items:center; gap:6px;}
+  .lamp{
+    width:34px; height:34px; border-radius:50%; background:radial-gradient(circle at 35% 30%, #4a4038, #221d18);
+    border:2px solid #45403a; position:relative;
+  }
+  .lamp.lit{background:radial-gradient(circle at 35% 30%, #ffe3ab, var(--lmp)); border-color:#ffd58a; box-shadow:0 0 18px 4px rgba(255,179,71,.75), 0 0 4px #fff inset;}
+  .lamp-label{font-size:9.5px; color:var(--muted); letter-spacing:.05em;}
+
+  /* timer */
+  .tmr-body{width:100%; display:flex; flex-direction:column; gap:5px; font-size:10px;}
+  .tmr-row{display:flex; align-items:center; justify-content:space-between; gap:6px;}
+  .tmr-row label{color:var(--muted); font-size:9.5px;}
+  .tmr-row input[type=number]{
+    width:58px; background:#20262a; border:1px solid var(--line); color:var(--text); border-radius:2px;
+    font-family:'JetBrains Mono',monospace; font-size:10px; padding:2px 4px;
+  }
+  .tmr-bar{height:6px; background:#20262a; border:1px solid var(--line); border-radius:3px; overflow:hidden;}
+  .tmr-bar-fill{height:100%; width:0%; background:linear-gradient(90deg,#8a6bd6,var(--tmr)); transition:width .08s linear;}
+  .tmr-q{display:flex; align-items:center; gap:5px;}
+  .tmr-q .mini-lamp{width:10px;height:10px;border-radius:50%; background:#332a45; border:1px solid #4a3d63;}
+  .tmr-q .mini-lamp.on{background:var(--tmr); box-shadow:0 0 6px var(--tmr);}
+
+  /* relay (SR latch) */
+  .rel-body{width:100%; display:flex; flex-direction:column; gap:4px; font-size:10px;}
+  .rel-row{display:flex; align-items:center; justify-content:space-between; gap:6px;}
+  .rel-row label{color:var(--muted); font-size:9.5px;}
+  .rel-row .mini-lamp{width:10px;height:10px;border-radius:50%; background:#20343a; border:1px solid #2c4a52; flex-shrink:0;}
+  .rel-row .mini-lamp.on{background:var(--rel); box-shadow:0 0 6px var(--rel);}
+  .rel-mode{
+    background:#20262a; border:1px solid var(--line); color:var(--text); border-radius:2px;
+    font-family:'JetBrains Mono',monospace; font-size:9.5px; padding:2px 3px; width:100%;
+  }
+  .rel-reset{
+    align-self:flex-start; font-family:'Oswald',sans-serif; letter-spacing:.05em; text-transform:uppercase;
+    font-size:9px; color:var(--muted); background:#20262a; border:1px solid var(--line); border-radius:2px;
+    padding:2px 7px; cursor:pointer; touch-action:manipulation;
+  }
+  .rel-reset:hover{color:var(--text); border-color:#565f61;}
+  .terminal.port-label{
+    position:absolute; font-size:8px; color:var(--muted); letter-spacing:.03em;
+    left:14px; white-space:nowrap; pointer-events:none;
+  }
+
+  /* ---------- code panel ---------- */
+  .codepanel{
+    position:fixed; top:0; right:-420px; width:400px; max-width:92vw; height:100vh;
+    background:var(--panel); border-left:2px solid var(--line);
+    display:flex; flex-direction:column; z-index:60;
+    box-shadow:-8px 0 24px rgba(0,0,0,.5);
+    transition:right .25s ease;
+  }
+  .codepanel.open{right:0;}
+  .cp-backdrop{
+    position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:55;
+    opacity:0; pointer-events:none; transition:opacity .25s ease;
+  }
+  .cp-backdrop.open{opacity:1; pointer-events:auto;}
+  .codepanel .cp-head{padding:12px 14px 6px; border-bottom:1px solid var(--line); display:flex; align-items:flex-start; justify-content:space-between; gap:8px;}
+  .codepanel .cp-head .cp-close{cursor:pointer; font-size:18px; color:var(--muted); line-height:1; padding:2px 4px;}
+  .codepanel .cp-head .cp-close:hover{color:var(--danger);}
+  .codepanel .cp-head h3{margin:0 0 2px; font-size:13px; color:#f2efe9;}
+  .codepanel .cp-head p{margin:0; font-size:10.5px; color:var(--muted); line-height:1.5;}
+  .cp-tabs{display:flex; gap:6px; padding:8px 14px 0;}
+  .cp-tab{
+    font-family:'Oswald',sans-serif; letter-spacing:.05em; text-transform:uppercase; font-size:10.5px; font-weight:600;
+    background:var(--panel2); color:var(--muted); border:1px solid var(--line); border-radius:3px 3px 0 0;
+    padding:6px 12px; cursor:pointer; border-bottom:none;
+  }
+  .cp-tab.active{color:var(--lmp); background:#101314; border-color:var(--lmp);}
+  .codepanel textarea[readonly]{color:#a9c9d6; background:#0d1012;}
+  .codepanel textarea{
+    flex:1; resize:none; border:none; outline:none; background:#101314; color:#d7f0d0;
+    font-family:'JetBrains Mono',monospace; font-size:12.5px; line-height:1.6; padding:14px;
+  }
+  .cp-actions{display:flex; gap:8px; padding:10px 14px; border-top:1px solid var(--line); background:var(--panel2);}
+  .cp-errors{padding:8px 14px; font-size:10.5px; color:var(--danger); background:rgba(255,90,95,.08); border-top:1px solid rgba(255,90,95,.3); max-height:80px; overflow-y:auto;}
+  .cp-errors:empty{display:none;}
+  .cp-help{padding:10px 14px; border-top:1px solid var(--line); font-size:10px; color:var(--muted); line-height:1.7;}
+  .cp-help code{color:#c9d4d6; background:#20262a; padding:1px 4px; border-radius:2px;}
+
+  /* ---------- projects panel ---------- */
+  .proj-panel{
+    position:fixed; top:0; right:-360px; width:340px; max-width:92vw; height:100vh;
+    background:var(--panel); border-left:2px solid var(--line);
+    display:flex; flex-direction:column; z-index:60;
+    box-shadow:-8px 0 24px rgba(0,0,0,.5);
+    transition:right .25s ease;
+  }
+  .proj-panel.open{right:0;}
+  .proj-panel .cp-head{padding:12px 14px 6px; border-bottom:1px solid var(--line); display:flex; align-items:flex-start; justify-content:space-between; gap:8px;}
+  .proj-panel .cp-head h3{margin:0 0 2px; font-size:13px; color:#f2efe9;}
+  .proj-panel .cp-head p{margin:0; font-size:10.5px; color:var(--muted); line-height:1.5;}
+  .proj-save-row{display:flex; gap:8px; padding:10px 14px; border-bottom:1px solid var(--line);}
+  .proj-save-row input{
+    flex:1; min-width:0; background:#101314; border:1px solid var(--line); color:var(--text); border-radius:3px;
+    padding:7px 9px; font-family:'JetBrains Mono',monospace; font-size:12px; outline:none;
+  }
+  .proj-save-row input:focus{border-color:var(--lmp);}
+  .proj-msg{padding:0 14px; font-size:10.5px; color:var(--ok); min-height:0;}
+  .proj-msg:empty{display:none;}
+  .proj-msg.err{color:var(--danger);}
+  .proj-list{flex:1; overflow-y:auto; padding:10px 10px;}
+  .proj-empty{padding:24px 10px; text-align:center; color:var(--muted); font-size:11.5px; line-height:1.6;}
+  .proj-row{
+    display:flex; align-items:center; gap:8px; padding:9px 10px; margin-bottom:6px;
+    background:var(--panel2); border:1px solid var(--line); border-radius:4px;
+  }
+  .proj-row .proj-info{flex:1; min-width:0;}
+  .proj-row .proj-name{font-size:12px; color:#f2efe9; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .proj-row .proj-meta{font-size:9.5px; color:var(--muted); margin-top:2px;}
+  .proj-row button{
+    font-family:'Oswald',sans-serif; letter-spacing:.04em; text-transform:uppercase; font-size:10px; font-weight:600;
+    background:#20262a; color:var(--text); border:1px solid var(--line); border-radius:3px;
+    padding:6px 9px; cursor:pointer; flex-shrink:0;
+  }
+  .proj-row button:hover{border-color:#565f61; background:#2b3234;}
+  .proj-row button.proj-del{color:var(--danger); border-color:transparent; background:transparent;}
+  .proj-row button.proj-del:hover{border-color:var(--danger); background:rgba(255,90,95,.1);}
+
+  /* ---------- gate blocks ---------- */
+  .gate-body{display:flex; flex-direction:column; align-items:center; gap:6px;}
+  .gate-symbol{font-family:'Oswald',sans-serif; font-weight:700; font-size:15px; letter-spacing:.04em; color:var(--muted);}
+  .gate-lamp{width:16px; height:16px; border-radius:50%; background:#20343a; border:1px solid #2c4a52;}
+  .gate-lamp.on{background:var(--gate); box-shadow:0 0 10px var(--gate);}
+  .gate-warn{font-size:8.5px; color:var(--danger); letter-spacing:.03em; text-align:center; line-height:1.3; display:none;}
+  .gate-warn.show{display:block;}
+
+  /* ---------- zoom controls ---------- */
+  .zoom-controls{display:flex; align-items:center; gap:2px; background:var(--panel2); border:1px solid var(--line); border-radius:3px; padding:2px;}
+  .zoom-controls button{
+    font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; color:var(--text);
+    background:transparent; border:none; cursor:pointer; padding:6px 10px; border-radius:2px; line-height:1;
+  }
+  .zoom-controls button:hover{background:#333b3d;}
+  .zoom-controls .zoom-pct{
+    font-size:10.5px; color:var(--muted); min-width:40px; text-align:center; letter-spacing:.03em; cursor:pointer;
+  }
+  .zoom-controls .zoom-pct:hover{color:var(--text);}
+
+  /* ---------- zoom stage (scaled workspace) ---------- */
+  .zoom-stage{position:relative;}
+
+  /* ---------- lamp color swatches ---------- */
+  .lamp-colors{display:flex; gap:4px; margin-top:2px;}
+  .lamp-swatch{
+    width:11px; height:11px; border-radius:50%; border:1px solid rgba(0,0,0,.35); cursor:pointer;
+    box-shadow:0 0 0 1px rgba(255,255,255,.06) inset; padding:0;
+  }
+  .lamp-swatch.selected{border-color:#fff; box-shadow:0 0 4px rgba(255,255,255,.8);}
+
+  .lamp.lit[data-color="amber"]{background:radial-gradient(circle at 35% 30%, #ffe3ab, #ffb347); border-color:#ffd58a; box-shadow:0 0 18px 4px rgba(255,179,71,.75), 0 0 4px #fff inset;}
+  .lamp.lit[data-color="red"]{background:radial-gradient(circle at 35% 30%, #ffc3c4, #ff5a5f); border-color:#ff9a9d; box-shadow:0 0 18px 4px rgba(255,90,95,.75), 0 0 4px #fff inset;}
+  .lamp.lit[data-color="green"]{background:radial-gradient(circle at 35% 30%, #bdf5e4, #37c2a0); border-color:#7fe0c5; box-shadow:0 0 18px 4px rgba(55,194,160,.75), 0 0 4px #fff inset;}
+  .lamp.lit[data-color="blue"]{background:radial-gradient(circle at 35% 30%, #c7e3ff, #4da3ff); border-color:#94c7ff; box-shadow:0 0 18px 4px rgba(77,163,255,.75), 0 0 4px #fff inset;}
+  .lamp.lit[data-color="white"]{background:radial-gradient(circle at 35% 30%, #ffffff, #d9e6e9); border-color:#f2f8fa; box-shadow:0 0 18px 4px rgba(255,255,255,.75), 0 0 4px #fff inset;}
+  .lamp.lit[data-color="purple"]{background:radial-gradient(circle at 35% 30%, #e3d3ff, #b98cff); border-color:#cdb0ff; box-shadow:0 0 18px 4px rgba(185,140,255,.75), 0 0 4px #fff inset;}
+
+  /* ---------- just-added highlight ---------- */
+  .block.just-added{animation:justAdded 1s ease-out;}
+  @keyframes justAdded{
+    0%{box-shadow:0 0 0 4px rgba(255,179,71,.9), 0 3px 10px rgba(0,0,0,.4);}
+    100%{box-shadow:0 3px 10px rgba(0,0,0,.4);}
+  }
+
+  /* ---------- bottom nav (mobile component tray) ---------- */
+  .bottom-nav{
+    display:none; position:fixed; left:0; right:0; bottom:0; z-index:45;
+    background:linear-gradient(180deg,#20262a,#181c1e); border-top:2px solid var(--line);
+    padding:8px 8px calc(8px + env(safe-area-inset-bottom));
+    gap:8px; overflow-x:auto; -webkit-overflow-scrolling:touch;
+  }
+  .bn-tile{
+    flex:0 0 auto; display:flex; flex-direction:column; align-items:center; gap:4px;
+    width:60px; padding:6px 4px; border-radius:6px; background:var(--panel2);
+    border:1px solid var(--line); border-top:3px solid var(--tile-color,#666);
+    touch-action:manipulation;
+  }
+  .bn-tile .icon{
+    width:24px; height:24px; border-radius:4px; display:flex; align-items:center; justify-content:center;
+    font-size:10.5px; font-weight:700; font-family:'Oswald',sans-serif;
+  }
+  .bn-tile .label{font-size:8.5px; color:var(--muted); letter-spacing:.02em; text-align:center; white-space:nowrap;}
+
+  /* ---------- responsive ---------- */
+  @media (max-width: 860px){
+    .palette{ display:none; }
+    .bottom-nav{ display:flex; }
+    .workspace-wrap{ padding-bottom:86px; }
+    .topbar{ overflow-x:auto; -webkit-overflow-scrolling:touch; padding:8px 10px; gap:8px; }
+    .topbar::-webkit-scrollbar{ display:none; }
+    .brand{ flex-shrink:0; }
+    .brand h1{ font-size:14px; white-space:nowrap; }
+    .brand span{ font-size:8.5px; white-space:nowrap; }
+    .status-pill{ flex-shrink:0; padding:5px 9px; font-size:9.5px; white-space:nowrap; }
+    button.ctrl{ flex-shrink:0; padding:7px 10px; font-size:10.5px; white-space:nowrap; }
+    .zoom-controls{ flex-shrink:0; }
+    .codepanel{ width:100%; max-width:100%; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="bolt"></div>
+      <div>
+        <h1>Ladder Bench</h1>
+        <span>PLC I/O &amp; LOGIC SIMULATOR</span>
+      </div>
+    </div>
+    <div class="status-pill run" id="statusPill"><div class="dot"></div><span id="statusText">RUNNING</span></div>
+    <div class="spacer"></div>
+    <div class="zoom-controls">
+      <button id="zoomOut" title="Zoom out">−</button>
+      <span class="zoom-pct" id="zoomPct" title="Reset zoom">100%</span>
+      <button id="zoomIn" title="Zoom in">+</button>
+    </div>
+    <button class="ctrl" id="btnExample">Load Example</button>
+    <button class="ctrl" id="btnProjects">Projects</button>
+    <button class="ctrl" id="btnReset">Reset I/O</button>
+    <button class="ctrl accent" id="btnRun">Pause</button>
+    <button class="ctrl" id="btnToggleCode">&lt;/&gt; Code</button>
+  </div>
+
+  <div class="main">
+
+    <div class="palette">
+      <h3>Add to canvas</h3>
+      <div class="ptile" data-type="PB" style="--tile-color:var(--pb)">
+        <div class="icon" style="background:rgba(77,163,255,.15); color:var(--pb);">PB</div>
+        <div class="label">Momentary<small>spring-return button</small></div>
+      </div>
+      <div class="ptile" data-type="PBN" style="--tile-color:var(--pbn)">
+        <div class="icon" style="background:rgba(224,119,156,.15); color:var(--pbn);">PB</div>
+        <div class="label">Momentary NC<small>normally-closed button</small></div>
+      </div>
+      <div class="ptile" data-type="SW" style="--tile-color:var(--sw)">
+        <div class="icon" style="background:rgba(55,194,160,.15); color:var(--sw);">SW</div>
+        <div class="label">Toggle<small>latching switch</small></div>
+      </div>
+      <div class="ptile" data-type="LMP" style="--tile-color:var(--lmp)">
+        <div class="icon" style="background:rgba(255,179,71,.15); color:var(--lmp);">●</div>
+        <div class="label">Lamp<small>output indicator</small></div>
+      </div>
+      <div class="ptile" data-type="MTR" style="--tile-color:var(--mtr)">
+        <div class="icon" style="background:rgba(143,191,111,.15); color:var(--mtr);">M</div>
+        <div class="label">Motor<small>output, chainable</small></div>
+      </div>
+      <div class="ptile" data-type="TMR" style="--tile-color:var(--tmr)">
+        <div class="icon" style="background:rgba(185,140,255,.15); color:var(--tmr);">TON</div>
+        <div class="label">Timer On<small>on-delay, ms</small></div>
+      </div>
+      <div class="ptile" data-type="TOF" style="--tile-color:var(--tof)">
+        <div class="icon" style="background:rgba(255,143,179,.15); color:var(--tof);">TOF</div>
+        <div class="label">Timer Off<small>off-delay, ms</small></div>
+      </div>
+      <div class="ptile" data-type="CTR" style="--tile-color:var(--ctr)">
+        <div class="icon" style="background:rgba(255,169,77,.15); color:var(--ctr);">CTU</div>
+        <div class="label">Counter<small>count-up, rising edge</small></div>
+      </div>
+      <div class="ptile" data-type="REL" style="--tile-color:var(--rel)">
+        <div class="icon" style="background:rgba(92,179,255,.15); color:var(--rel);">S/R</div>
+        <div class="label">Relay<small>set/reset latch</small></div>
+      </div>
+      <div class="ptile" data-type="EST" style="--tile-color:var(--est)">
+        <div class="icon" style="background:rgba(255,59,59,.15); color:var(--est);">⏻</div>
+        <div class="label">E-Stop<small>latching, cuts power</small></div>
+      </div>
+
+      <div class="divider"></div>
+      <h3>Logic gates</h3>
+      <div class="ptile" data-type="AND" style="--tile-color:var(--gate)">
+        <div class="icon" style="background:rgba(92,214,224,.15); color:var(--gate);">AND</div>
+        <div class="label">AND<small>all inputs true</small></div>
+      </div>
+      <div class="ptile" data-type="OR" style="--tile-color:var(--gate)">
+        <div class="icon" style="background:rgba(92,214,224,.15); color:var(--gate);">OR</div>
+        <div class="label">OR<small>any input true</small></div>
+      </div>
+      <div class="ptile" data-type="NOT" style="--tile-color:var(--gate)">
+        <div class="icon" style="background:rgba(92,214,224,.15); color:var(--gate);">NOT</div>
+        <div class="label">NOT<small>inverts input</small></div>
+      </div>
+      <div class="ptile" data-type="XOR" style="--tile-color:var(--gate)">
+        <div class="icon" style="background:rgba(92,214,224,.15); color:var(--gate);">XOR</div>
+        <div class="label">XOR<small>exactly one differs</small></div>
+      </div>
+
+      <div class="divider"></div>
+      <h3>Wiring</h3>
+      <div class="legend">
+        Tap an output terminal (right side of a block), then tap an input terminal (left side of a block) to connect them. Tap the output again to cancel.<br><br>
+        Lamps and Motors have both an input and an output terminal, so their state can feed into other blocks (gates, timers, counters, or another output).<br><br>
+        Drag block headers to move. Tap the <code>×</code> on a wire or block to remove it.<br><br>
+        Double-tap a block's ID label to rename it.
+      </div>
+    </div>
+
+    <div class="workspace-wrap" id="workspaceWrap">
+      <div class="zoom-stage" id="zoomStage">
+        <div class="workspace" id="workspace">
+          <svg class="wires" id="wiresLayer"></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="cp-backdrop" id="cpBackdrop"></div>
+    <div class="codepanel" id="codePanel">
+      <div class="cp-head">
+        <div>
+          <h3>Program</h3>
+          <p>Auto-generated from your wiring. Edit freely, then Apply. Re-wiring the canvas will regenerate this and overwrite manual edits.</p>
+        </div>
+        <span class="cp-close" id="cpClose">×</span>
+      </div>
+      <div class="cp-tabs">
+        <div class="cp-tab active" id="tabST">Structured Text</div>
+        <div class="cp-tab" id="tabIL">Instruction List</div>
+      </div>
+      <textarea id="codeArea" spellcheck="false"></textarea>
+      <div class="cp-errors" id="cpErrors"></div>
+      <div class="cp-actions">
+        <button class="ctrl accent" id="btnApply" style="flex:1;">Apply Code</button>
+        <button class="ctrl" id="btnRegen" style="flex:1;">Regenerate from Canvas</button>
+      </div>
+      <div class="cp-help">
+        Syntax: <code>TARGET = EXPR</code> using <code>AND</code> <code>OR</code> <code>XOR</code> <code>NOT</code> <code>( )</code><br>
+        <code>LMP1 = PB1 OR TMR1.Q</code><br>
+        <code>TMR1.IN = SW1 AND NOT PB2</code><br>
+        <code>TMR1.PT = 3000</code> <span style="color:#666">// preset ms, numeric only</span><br>
+        <code>CTR1.PV = 5</code> <span style="color:#666">// preset count, numeric only</span><br>
+        <code>REL1.SET = PB1</code> · <code>REL1.RESET = PB2</code> <span style="color:#666">// SET/RESET latch inputs</span><br>
+        <code>AND1 = PB1 AND SW1</code> · <code>NOT1 = NOT (PB1)</code> · <code>XOR1 = PB1 XOR SW1</code><br>
+        Timer On (TMR) delays turning <b>on</b>; Timer Off (TOF) delays turning <b>off</b>; Counter (CTR) counts rising edges on IN and compares CV to PV using its <b>≥ / ≤ / =</b> dropdown.<br>
+        Relay (REL) is a SET/RESET latch: SET drives Q true, RESET drives Q false, and Q holds its last state when neither is live. Its dropdown picks which one wins if both are live at once (default: Reset dominant).<br>
+        Lamp and Motor outputs each have an output terminal too, so you can wire one into another gate, timer, counter, or output.<br>
+        E-Stop (EST) behaves like a latching switch, wired the same way as a Toggle — tap once to trip it (output goes false), tap again to reset.<br>
+        The <b>Instruction List</b> tab shows the same logic as accumulator-style IL (<code>LD / AND / OR / XOR / NOT / ST</code>) — it's a read-only view generated from the Structured Text.
+      </div>
+    </div>
+
+    <div class="cp-backdrop" id="projBackdrop"></div>
+    <div class="proj-panel" id="projPanel">
+      <div class="cp-head">
+        <div>
+          <h3>Projects</h3>
+          <p>Saved locally in this browser (localStorage). Save as many as you like, load or delete anytime.</p>
+        </div>
+        <span class="cp-close" id="projClose">×</span>
+      </div>
+      <div class="proj-save-row">
+        <input type="text" id="projNameInput" placeholder="Project name…" maxlength="60">
+        <button class="ctrl accent" id="projSaveBtn">Save</button>
+      </div>
+      <div class="proj-msg" id="projMsg"></div>
+      <div class="proj-list" id="projList"></div>
+    </div>
+
+  </div>
+
+  <div class="bottom-nav" id="bottomNav">
+    <div class="bn-tile" data-type="PB" style="--tile-color:var(--pb)">
+      <div class="icon" style="background:rgba(77,163,255,.15); color:var(--pb);">PB</div>
+      <div class="label">Momentary</div>
+    </div>
+    <div class="bn-tile" data-type="PBN" style="--tile-color:var(--pbn)">
+      <div class="icon" style="background:rgba(224,119,156,.15); color:var(--pbn);">PB</div>
+      <div class="label">Mom. NC</div>
+    </div>
+    <div class="bn-tile" data-type="SW" style="--tile-color:var(--sw)">
+      <div class="icon" style="background:rgba(55,194,160,.15); color:var(--sw);">SW</div>
+      <div class="label">Toggle</div>
+    </div>
+    <div class="bn-tile" data-type="LMP" style="--tile-color:var(--lmp)">
+      <div class="icon" style="background:rgba(255,179,71,.15); color:var(--lmp);">●</div>
+      <div class="label">Lamp</div>
+    </div>
+    <div class="bn-tile" data-type="MTR" style="--tile-color:var(--mtr)">
+      <div class="icon" style="background:rgba(143,191,111,.15); color:var(--mtr);">M</div>
+      <div class="label">Motor</div>
+    </div>
+    <div class="bn-tile" data-type="TMR" style="--tile-color:var(--tmr)">
+      <div class="icon" style="background:rgba(185,140,255,.15); color:var(--tmr);">TON</div>
+      <div class="label">Timer On</div>
+    </div>
+    <div class="bn-tile" data-type="TOF" style="--tile-color:var(--tof)">
+      <div class="icon" style="background:rgba(255,143,179,.15); color:var(--tof);">TOF</div>
+      <div class="label">Timer Off</div>
+    </div>
+    <div class="bn-tile" data-type="CTR" style="--tile-color:var(--ctr)">
+      <div class="icon" style="background:rgba(255,169,77,.15); color:var(--ctr);">CTU</div>
+      <div class="label">Counter</div>
+    </div>
+    <div class="bn-tile" data-type="REL" style="--tile-color:var(--rel)">
+      <div class="icon" style="background:rgba(92,179,255,.15); color:var(--rel);">S/R</div>
+      <div class="label">Relay</div>
+    </div>
+    <div class="bn-tile" data-type="EST" style="--tile-color:var(--est)">
+      <div class="icon" style="background:rgba(255,59,59,.15); color:var(--est);">⏻</div>
+      <div class="label">E-Stop</div>
+    </div>
+    <div class="bn-tile" data-type="AND" style="--tile-color:var(--gate)">
+      <div class="icon" style="background:rgba(92,214,224,.15); color:var(--gate);">AND</div>
+      <div class="label">AND</div>
+    </div>
+    <div class="bn-tile" data-type="OR" style="--tile-color:var(--gate)">
+      <div class="icon" style="background:rgba(92,214,224,.15); color:var(--gate);">OR</div>
+      <div class="label">OR</div>
+    </div>
+    <div class="bn-tile" data-type="NOT" style="--tile-color:var(--gate)">
+      <div class="icon" style="background:rgba(92,214,224,.15); color:var(--gate);">NOT</div>
+      <div class="label">NOT</div>
+    </div>
+    <div class="bn-tile" data-type="XOR" style="--tile-color:var(--gate)">
+      <div class="icon" style="background:rgba(92,214,224,.15); color:var(--gate);">XOR</div>
+      <div class="label">XOR</div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const BLOCK_W = 150, BLOCK_H = 92;
+  const BLOCK_H_OVERRIDE = {LMP: 128, CTR: 148, EST: 118, REL: 156}; // lamp needs extra room for the color swatch + blink row; counter for the mode select, live count + reset button; e-stop for its round button; relay for two labeled ports + mode + reset button
+  function blockH(type){ return BLOCK_H_OVERRIDE[type] || BLOCK_H; }
+  const CANVAS_W = 2200, CANVAS_H = 1400;
+  const TYPE_COLOR = {PB:'var(--pb)', PBN:'var(--pbn)', SW:'var(--sw)', EST:'var(--est)', LMP:'var(--lmp)', MTR:'var(--mtr)', TMR:'var(--tmr)', TOF:'var(--tof)', CTR:'var(--ctr)', REL:'var(--rel)', AND:'var(--gate)', OR:'var(--gate)', NOT:'var(--gate)', XOR:'var(--gate)'};
+  const TIMER_TYPES = ['TMR','TOF'];
+  const GATE_TYPES = ['AND','OR','NOT','XOR'];
+  const MIN2_GATES = ['AND','OR','XOR']; // gates that require at least 2 inputs to produce output
+  const Q_OUTPUT_TYPES = ['TMR','TOF','CTR','REL']; // components whose bare reference (no .prop) means .Q
+  const OUTPUT_TYPES = ['LMP','MTR']; // output-style components: have an input AND an output, so they can feed other blocks
+  const LAMP_COLORS = ['amber','red','green','blue','white','purple'];
+  const CTR_MODES = {gte:'\u2265 PV', lte:'\u2264 PV', eq:'= PV'};
+  const REL_MODES = {reset:'Reset dominant', set:'Set dominant'}; // when SET and RESET are both live at once, which one wins
+  function defaultMode(type){ return type === 'REL' ? 'reset' : 'gte'; }
+  const workspace = document.getElementById('workspace');
+  const wrap = document.getElementById('workspaceWrap');
+  const zoomStage = document.getElementById('zoomStage');
+  const svg = document.getElementById('wiresLayer');
+  const codeArea = document.getElementById('codeArea');
+  const cpErrors = document.getElementById('cpErrors');
+
+  let components = [];   // {id,type,x,y,el, value/pressed, PT, ET, Q, IN, color}
+  let wires = [];        // {from, to, el}
+  let idCounters = {PB:0, PBN:0, SW:0, EST:0, LMP:0, MTR:0, TMR:0, TOF:0, CTR:0, REL:0, AND:0, OR:0, NOT:0, XOR:0};
+
+  // ---------------- component sound effects ----------------
+  const sndPB = new Audio('/project/plc/audio/pb.mp3');
+  sndPB.preload = 'auto';
+  const sndEStop = new Audio('/project/plc/audio/e-stop.mp3');
+  sndEStop.preload = 'auto';
+  function playSound(audio){
+    try{
+      audio.currentTime = 0;
+      const p = audio.play();
+      if(p && p.catch) p.catch(() => {}); // ignore autoplay-policy rejections (e.g. before first user gesture)
+    } catch(err){ /* ignore playback errors */ }
+  }
+  let program = [];      // compiled logic lines
+  let running = true;
+  let dragging = null;   // {comp, offX, offY}
+  let pendingOutput = null; // id of output terminal awaiting connection
+  let placeCounter = 0;
+  let zoom = 1;
+  const ZOOM_MIN = 0.4, ZOOM_MAX = 2, ZOOM_STEP = 0.1;
+
+  // ---------------- zoom ----------------
+  function setZoom(z){
+    zoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, z));
+    workspace.style.transform = `scale(${zoom})`;
+    workspace.style.transformOrigin = '0 0';
+    zoomStage.style.width = (CANVAS_W * zoom) + 'px';
+    zoomStage.style.height = (CANVAS_H * zoom) + 'px';
+    const pct = document.getElementById('zoomPct');
+    if(pct) pct.textContent = Math.round(zoom * 100) + '%';
+  }
+
+  // ---------------- helpers ----------------
+  function uid(type){
+    // Numbers are never reused, even after a component is deleted — the counter
+    // only ever moves forward. The extra existence check is a safety net in case
+    // counters and the live component list ever drift out of sync.
+    idCounters[type]++;
+    let id = type + idCounters[type];
+    while(components.some(c => c.id === id)){
+      idCounters[type]++;
+      id = type + idCounters[type];
+    }
+    return id;
+  }
+
+  function termPos(comp, side, port){
+    // side: 'input' -> left edge, 'output' -> right edge
+    // REL has two input ports (SET / RESET) stacked instead of one centered terminal
+    let y;
+    if(comp.type === 'REL' && side === 'input'){
+      y = comp.y + blockH(comp.type) * (port === 'RESET' ? 0.72 : 0.34);
+    } else {
+      y = comp.y + blockH(comp.type)/2;
+    }
+    const x = side === 'input' ? comp.x : comp.x + BLOCK_W;
+    return {x, y};
+  }
+
+  function findComp(id){ return components.find(c => c.id === id); }
+
+  // ---------------- rename ----------------
+  function startRename(comp, idLabel){
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'id-input';
+    input.value = comp.id;
+    input.addEventListener('pointerdown', e => e.stopPropagation());
+    input.addEventListener('click', e => e.stopPropagation());
+    idLabel.replaceWith(input);
+    input.focus();
+    input.select();
+    let done = false;
+    function commit(){
+      if(done) return;
+      done = true;
+      const newLabel = renameComponent(comp, input.value.trim());
+      input.replaceWith(newLabel);
+    }
+    input.addEventListener('blur', commit);
+    input.addEventListener('keydown', e => {
+      if(e.key === 'Enter'){ e.preventDefault(); input.blur(); }
+      if(e.key === 'Escape'){ e.preventDefault(); done = true; const newLabel = makeIdLabel(comp); input.replaceWith(newLabel); }
+    });
+  }
+
+  function makeIdLabel(comp){
+    const idLabel = document.createElement('span');
+    idLabel.className = 'id';
+    idLabel.textContent = comp.id;
+    idLabel.title = 'Double-tap to rename';
+    idLabel.addEventListener('pointerdown', e => e.stopPropagation());
+    idLabel.addEventListener('dblclick', e => { e.stopPropagation(); startRename(comp, idLabel); });
+    return idLabel;
+  }
+
+  function renameComponent(comp, newId){
+    const valid = /^[A-Za-z_][A-Za-z0-9_]*$/.test(newId);
+    if(!valid || newId === comp.id || (components.some(c => c !== comp && c.id === newId))){
+      return makeIdLabel(comp); // invalid/duplicate/unchanged — revert silently
+    }
+    const oldId = comp.id;
+    comp.id = newId;
+    wires.forEach(w => {
+      if(w.from === oldId) w.from = newId;
+      if(w.to === oldId) w.to = newId;
+    });
+    renderWires();
+    regenerateCodeFromCanvas();
+    return makeIdLabel(comp);
+  }
+
+  // ---------------- component creation ----------------
+  function addComponent(type, x, y){
+    const id = uid(type);
+    placeCounter++;
+    if(x === undefined){
+      // spawn within the currently visible part of the canvas (accounting for scroll + zoom)
+      // so the new block is always immediately visible, cascading slightly so repeated
+      // additions don't stack exactly on top of one another.
+      const cascade = placeCounter % 6;
+      const marginX = 34, marginY = 34, step = 28;
+      const bottomSafe = 130; // keep clear of the mobile bottom nav
+      const viewW = wrap.clientWidth, viewH = wrap.clientHeight;
+      x = (wrap.scrollLeft + marginX + cascade * step) / zoom;
+      y = (wrap.scrollTop + marginY + cascade * step) / zoom;
+      const maxX = (wrap.scrollLeft + viewW - BLOCK_W - 10) / zoom;
+      const maxY = (wrap.scrollTop + viewH - bottomSafe) / zoom;
+      x = Math.min(x, Math.max(marginX / zoom, maxX));
+      y = Math.min(y, Math.max(marginY / zoom, maxY));
+      x = Math.min(x, CANVAS_W - BLOCK_W - 10);
+      y = Math.min(y, CANVAS_H - blockH(type) - 10);
+    }
+    const comp = {id, type, x, y, value: type === 'PBN' || type === 'EST', PT:2000, ET:0, Q:false, IN:false, SET:false, RESET:false, color:'amber', blink:false, PV:5, CV:0, mode:defaultMode(type), _prevIN:false};
+    components.push(comp);
+    renderComponent(comp);
+    comp.el.classList.add('just-added');
+    setTimeout(() => comp.el && comp.el.classList.remove('just-added'), 1000);
+    regenerateCodeFromCanvas();
+    return comp;
+  }
+
+  function removeComponent(id){
+    const comp = findComp(id);
+    if(!comp) return;
+    if(comp.el) comp.el.remove();
+    components = components.filter(c => c.id !== id);
+    const toRemove = wires.filter(w => w.from === id || w.to === id);
+    toRemove.forEach(w => { if(w.el) w.el.remove(); if(w.delEl) w.delEl.remove(); });
+    wires = wires.filter(w => w.from !== id && w.to !== id);
+    regenerateCodeFromCanvas();
+  }
+
+  function addWire(fromId, toId, toPort){
+    if(fromId === toId) return;
+    toPort = toPort || null;
+    if(wires.some(w => w.from === fromId && w.to === toId && (w.toPort || null) === toPort)) return;
+    wires.push({from: fromId, to: toId, toPort});
+    renderWires();
+    regenerateCodeFromCanvas();
+  }
+
+  function removeWire(w){
+    wires = wires.filter(x => x !== w);
+    renderWires();
+    regenerateCodeFromCanvas();
+  }
+
+  // ---------------- rendering: components ----------------
+  function renderComponent(comp){
+    const el = document.createElement('div');
+    el.className = 'block';
+    el.style.left = comp.x + 'px';
+    el.style.top = comp.y + 'px';
+    el.style.height = blockH(comp.type) + 'px';
+    el.style.setProperty('--type-color', TYPE_COLOR[comp.type]);
+
+    const head = document.createElement('div');
+    head.className = 'head';
+    const idLabel = makeIdLabel(comp);
+    const del = document.createElement('span');
+    del.className = 'del';
+    del.textContent = '×';
+    del.title = 'Delete';
+    del.addEventListener('pointerdown', e => e.stopPropagation());
+    del.addEventListener('click', () => removeComponent(comp.id));
+    head.appendChild(idLabel);
+    head.appendChild(del);
+    head.addEventListener('pointerdown', e => startDrag(e, comp));
+
+    const body = document.createElement('div');
+    body.className = 'body';
+
+    if(comp.type === 'PB'){
+      const face = document.createElement('div');
+      face.className = 'pb-face';
+      face.textContent = 'PUSH';
+      face.addEventListener('pointerdown', e => {
+        e.stopPropagation(); e.preventDefault();
+        face.classList.add('pressed');
+        playSound(sndPB);
+        clearTimeout(comp._pbTimer);
+        comp._pbTimer = setTimeout(() => { comp.value = true; pulseNow(); }, PB_DELAY_MS);
+      });
+      const release = () => {
+        face.classList.remove('pressed');
+        clearTimeout(comp._pbTimer);
+        comp.value = false;
+        pulseNow();
+      };
+      face.addEventListener('pointerup', release);
+      face.addEventListener('pointercancel', release);
+      face.addEventListener('pointerleave', release);
+      body.appendChild(face);
+      const t = makeTerminal(comp, 'output');
+      el.appendChild(t);
+    }
+
+    if(comp.type === 'PBN'){
+      const face = document.createElement('div');
+      face.className = 'pb-face pbn-face';
+      face.textContent = 'PUSH (NC)';
+      face.addEventListener('pointerdown', e => { e.stopPropagation(); e.preventDefault(); comp.value = false; face.classList.add('pressed'); pulseNow(); });
+      const release = () => { comp.value = true; face.classList.remove('pressed'); pulseNow(); };
+      face.addEventListener('pointerup', release);
+      face.addEventListener('pointercancel', release);
+      face.addEventListener('pointerleave', release);
+      body.appendChild(face);
+      const t = makeTerminal(comp, 'output');
+      el.appendChild(t);
+    }
+
+    if(comp.type === 'SW'){
+      const face = document.createElement('div');
+      face.className = 'sw-face';
+      face.textContent = comp.value ? 'ON' : 'OFF';
+      face.addEventListener('pointerdown', e => e.stopPropagation());
+      face.addEventListener('click', () => {
+        comp.value = !comp.value;
+        face.textContent = comp.value ? 'ON' : 'OFF';
+        face.classList.toggle('on', comp.value);
+        pulseNow();
+      });
+      body.appendChild(face);
+      const t = makeTerminal(comp, 'output');
+      el.appendChild(t);
+    }
+
+    if(comp.type === 'EST'){
+      const wrap2 = document.createElement('div');
+      wrap2.className = 'est-wrap';
+      const face = document.createElement('div');
+      face.className = 'est-face pb-face';
+      const txt = document.createElement('div');
+      txt.className = 'est-txt';
+      txt.textContent = 'STOP';
+      face.appendChild(txt);
+      face.classList.toggle('tripped', !comp.value);
+      const lbl = document.createElement('div');
+      lbl.className = 'est-label';
+      lbl.textContent = comp.value ? 'NORMAL' : 'TRIPPED — twist to reset';
+      face.addEventListener('pointerdown', e => e.stopPropagation());
+      face.addEventListener('click', () => {
+        comp.value = !comp.value; // latching: tap trips it, tap again resets it — like a switch, not momentary
+        if(!comp.value) playSound(sndEStop); // alarm sound plays on trip, not on reset
+        face.classList.toggle('tripped', !comp.value);
+        lbl.textContent = comp.value ? 'NORMAL' : 'TRIPPED — twist to reset';
+        pulseNow();
+      });
+      wrap2.appendChild(face);
+      wrap2.appendChild(lbl);
+      body.appendChild(wrap2);
+      const t = makeTerminal(comp, 'output');
+      el.appendChild(t);
+    }
+
+    if(comp.type === 'LMP'){
+      const wrap2 = document.createElement('div');
+      wrap2.className = 'lamp-wrap';
+      const lamp = document.createElement('div');
+      lamp.className = 'lamp';
+      lamp.dataset.color = comp.color || 'amber';
+      const lbl = document.createElement('div');
+      lbl.className = 'lamp-label';
+      lbl.textContent = 'OUTPUT';
+      const colors = document.createElement('div');
+      colors.className = 'lamp-colors';
+      LAMP_COLORS.forEach(cname => {
+        const sw = document.createElement('div');
+        sw.className = 'lamp-swatch' + (comp.color === cname || (!comp.color && cname === 'amber') ? ' selected' : '');
+        sw.style.background = {amber:'#ffb347', red:'#ff5a5f', green:'#37c2a0', blue:'#4da3ff', white:'#eef4f6', purple:'#b98cff'}[cname];
+        sw.title = cname;
+        sw.addEventListener('pointerdown', e => e.stopPropagation());
+        sw.addEventListener('click', e => {
+          e.stopPropagation();
+          comp.color = cname;
+          lamp.dataset.color = cname;
+          colors.querySelectorAll('.lamp-swatch').forEach(s => s.classList.remove('selected'));
+          sw.classList.add('selected');
+        });
+        colors.appendChild(sw);
+      });
+      const blinkRow = document.createElement('div');
+      blinkRow.className = 'lamp-blink';
+      const blinkChk = document.createElement('input');
+      blinkChk.type = 'checkbox';
+      blinkChk.checked = !!comp.blink;
+      blinkChk.addEventListener('pointerdown', e => e.stopPropagation());
+      blinkChk.addEventListener('change', () => { comp.blink = blinkChk.checked; });
+      const blinkLbl = document.createElement('label');
+      blinkLbl.textContent = 'Blink';
+      blinkLbl.addEventListener('pointerdown', e => e.stopPropagation());
+      blinkLbl.addEventListener('click', () => { blinkChk.checked = !blinkChk.checked; comp.blink = blinkChk.checked; });
+      blinkRow.appendChild(blinkChk);
+      blinkRow.appendChild(blinkLbl);
+      wrap2.appendChild(lamp);
+      wrap2.appendChild(lbl);
+      wrap2.appendChild(colors);
+      wrap2.appendChild(blinkRow);
+      body.appendChild(wrap2);
+      comp._lampEl = lamp;
+      const tin = makeTerminal(comp, 'input');
+      const tout = makeTerminal(comp, 'output');
+      el.appendChild(tin); el.appendChild(tout);
+    }
+
+    if(comp.type === 'MTR'){
+      const wrap2 = document.createElement('div');
+      wrap2.className = 'mtr-wrap';
+      const ring = document.createElement('div');
+      ring.className = 'mtr-ring';
+      const glyph = document.createElement('span');
+      glyph.className = 'mtr-glyph';
+      glyph.textContent = 'M';
+      ring.appendChild(glyph);
+      const lbl = document.createElement('div');
+      lbl.className = 'mtr-label';
+      lbl.textContent = 'MOTOR';
+      wrap2.appendChild(ring);
+      wrap2.appendChild(lbl);
+      body.appendChild(wrap2);
+      comp._mtrEl = ring;
+      const tin = makeTerminal(comp, 'input');
+      const tout = makeTerminal(comp, 'output');
+      el.appendChild(tin); el.appendChild(tout);
+    }
+
+    if(comp.type === 'TMR' || comp.type === 'TOF'){
+      const tb = document.createElement('div');
+      tb.className = 'tmr-body';
+      const row1 = document.createElement('div');
+      row1.className = 'tmr-row';
+      const lbl1 = document.createElement('label');
+      lbl1.textContent = 'PT (ms)';
+      const inp = document.createElement('input');
+      inp.type = 'number'; inp.min = '0'; inp.step = '100';
+      inp.value = comp.PT;
+      inp.addEventListener('pointerdown', e => e.stopPropagation());
+      inp.addEventListener('change', () => { comp.PT = parseFloat(inp.value) || 0; regenerateCodeFromCanvas(); });
+      row1.appendChild(lbl1); row1.appendChild(inp);
+      const bar = document.createElement('div');
+      bar.className = 'tmr-bar';
+      const fill = document.createElement('div');
+      fill.className = 'tmr-bar-fill';
+      bar.appendChild(fill);
+      const row2 = document.createElement('div');
+      row2.className = 'tmr-q';
+      const mini = document.createElement('div');
+      mini.className = 'mini-lamp';
+      const qlbl = document.createElement('label');
+      qlbl.textContent = comp.type === 'TOF' ? 'Q (off-delay)' : 'Q (on-delay)';
+      row2.appendChild(mini); row2.appendChild(qlbl);
+      tb.appendChild(row1); tb.appendChild(bar); tb.appendChild(row2);
+      body.appendChild(tb);
+      comp._fillEl = fill; comp._miniEl = mini;
+      const tin = makeTerminal(comp, 'input');
+      const tout = makeTerminal(comp, 'output');
+      el.appendChild(tin); el.appendChild(tout);
+    }
+
+    if(comp.type === 'CTR'){
+      const tb = document.createElement('div');
+      tb.className = 'ctr-body';
+      const row1 = document.createElement('div');
+      row1.className = 'tmr-row';
+      const lbl1 = document.createElement('label');
+      lbl1.textContent = 'PV (count)';
+      const inp = document.createElement('input');
+      inp.type = 'number'; inp.min = '0'; inp.step = '1';
+      inp.value = comp.PV;
+      inp.addEventListener('pointerdown', e => e.stopPropagation());
+      inp.addEventListener('change', () => { comp.PV = parseInt(inp.value, 10) || 0; regenerateCodeFromCanvas(); });
+      row1.appendChild(lbl1); row1.appendChild(inp);
+      const rowMode = document.createElement('div');
+      rowMode.className = 'tmr-row';
+      const lblMode = document.createElement('label');
+      lblMode.textContent = 'Q when CV';
+      const sel = document.createElement('select');
+      sel.className = 'ctr-mode';
+      Object.keys(CTR_MODES).forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m;
+        opt.textContent = CTR_MODES[m];
+        if((comp.mode || 'gte') === m) opt.selected = true;
+        sel.appendChild(opt);
+      });
+      sel.addEventListener('pointerdown', e => e.stopPropagation());
+      sel.addEventListener('change', () => { comp.mode = sel.value; qlbl.textContent = 'Q (CV ' + CTR_MODES[sel.value] + ')'; });
+      rowMode.appendChild(lblMode); rowMode.appendChild(sel);
+      const bar = document.createElement('div');
+      bar.className = 'tmr-bar';
+      const fill = document.createElement('div');
+      fill.className = 'tmr-bar-fill';
+      bar.appendChild(fill);
+      const countRow = document.createElement('div');
+      countRow.className = 'ctr-count';
+      countRow.innerHTML = 'Count: <b>' + (comp.CV || 0) + '</b>';
+      const row2 = document.createElement('div');
+      row2.className = 'tmr-q';
+      const mini = document.createElement('div');
+      mini.className = 'mini-lamp';
+      const qlbl = document.createElement('label');
+      qlbl.textContent = 'Q (CV ' + CTR_MODES[comp.mode || 'gte'] + ')';
+      row2.appendChild(mini); row2.appendChild(qlbl);
+      const reset = document.createElement('button');
+      reset.type = 'button';
+      reset.className = 'ctr-reset';
+      reset.textContent = 'Reset CV';
+      reset.addEventListener('pointerdown', e => e.stopPropagation());
+      reset.addEventListener('click', () => { comp.CV = 0; comp.Q = false; comp._prevIN = false; pulseNow(); });
+      tb.appendChild(row1); tb.appendChild(rowMode); tb.appendChild(countRow); tb.appendChild(bar); tb.appendChild(row2); tb.appendChild(reset);
+      body.appendChild(tb);
+      comp._fillEl = fill; comp._miniEl = mini; comp._countEl = countRow;
+      const tin = makeTerminal(comp, 'input');
+      const tout = makeTerminal(comp, 'output');
+      el.appendChild(tin); el.appendChild(tout);
+    }
+
+    if(comp.type === 'REL'){
+      const tb = document.createElement('div');
+      tb.className = 'rel-body';
+
+      const rowSet = document.createElement('div');
+      rowSet.className = 'rel-row';
+      const setLamp = document.createElement('div');
+      setLamp.className = 'mini-lamp';
+      const setLbl = document.createElement('label');
+      setLbl.textContent = 'SET';
+      rowSet.appendChild(setLamp); rowSet.appendChild(setLbl);
+
+      const rowMode = document.createElement('div');
+      rowMode.className = 'rel-row';
+      const lblMode = document.createElement('label');
+      lblMode.textContent = 'If both live';
+      const sel = document.createElement('select');
+      sel.className = 'rel-mode';
+      Object.keys(REL_MODES).forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m;
+        opt.textContent = REL_MODES[m];
+        if((comp.mode || 'reset') === m) opt.selected = true;
+        sel.appendChild(opt);
+      });
+      sel.addEventListener('pointerdown', e => e.stopPropagation());
+      sel.addEventListener('change', () => { comp.mode = sel.value; });
+      rowMode.appendChild(lblMode); rowMode.appendChild(sel);
+
+      const rowQ = document.createElement('div');
+      rowQ.className = 'rel-row';
+      const qLamp = document.createElement('div');
+      qLamp.className = 'mini-lamp';
+      const qLbl = document.createElement('label');
+      qLbl.textContent = 'Q (latched)';
+      rowQ.appendChild(qLamp); rowQ.appendChild(qLbl);
+
+      const reset = document.createElement('button');
+      reset.type = 'button';
+      reset.className = 'rel-reset';
+      reset.textContent = 'Reset Q';
+      reset.title = 'Manually force Q false, independent of any wired RESET input';
+      reset.addEventListener('pointerdown', e => e.stopPropagation());
+      reset.addEventListener('click', () => { comp.Q = false; pulseNow(); });
+
+      const rowRst = document.createElement('div');
+      rowRst.className = 'rel-row';
+      const rstLamp = document.createElement('div');
+      rstLamp.className = 'mini-lamp';
+      const rstLbl = document.createElement('label');
+      rstLbl.textContent = 'RESET';
+      rowRst.appendChild(rstLamp); rowRst.appendChild(rstLbl);
+
+      tb.appendChild(rowSet); tb.appendChild(rowMode); tb.appendChild(rowQ); tb.appendChild(reset); tb.appendChild(rowRst);
+      body.appendChild(tb);
+      comp._setLampEl = setLamp; comp._rstLampEl = rstLamp; comp._qLampEl = qLamp;
+
+      const tSet = makeTerminal(comp, 'input', 'SET');
+      const tRst = makeTerminal(comp, 'input', 'RESET');
+      const tout = makeTerminal(comp, 'output');
+      el.appendChild(tSet); el.appendChild(tRst); el.appendChild(tout);
+    }
+
+    if(GATE_TYPES.includes(comp.type)){
+      const gb = document.createElement('div');
+      gb.className = 'gate-body';
+      const sym = document.createElement('div');
+      sym.className = 'gate-symbol';
+      sym.textContent = comp.type;
+      const lamp = document.createElement('div');
+      lamp.className = 'gate-lamp';
+      const lbl = document.createElement('div');
+      lbl.className = 'lamp-label';
+      lbl.textContent = comp.type === 'NOT' ? 'inverted out' : 'gate out';
+      gb.appendChild(sym); gb.appendChild(lamp); gb.appendChild(lbl);
+      if(MIN2_GATES.includes(comp.type)){
+        const warn = document.createElement('div');
+        warn.className = 'gate-warn';
+        warn.textContent = 'needs 2+ inputs';
+        gb.appendChild(warn);
+        comp._gateWarnEl = warn;
+      }
+      body.appendChild(gb);
+      comp._gateLampEl = lamp;
+      const tin = makeTerminal(comp, 'input');
+      const tout = makeTerminal(comp, 'output');
+      el.appendChild(tin); el.appendChild(tout);
+    }
+
+    el.appendChild(head);
+    el.appendChild(body);
+    workspace.appendChild(el);
+    comp.el = el;
+  }
+
+  function makeTerminal(comp, side, port){
+    const t = document.createElement('div');
+    t.className = 'terminal ' + side;
+    t.dataset.comp = comp.id;
+    t.dataset.side = side;
+    if(port){
+      t.dataset.port = port;
+      const pct = (comp.type === 'REL' && side === 'input') ? (port === 'RESET' ? 72 : 34) : 50;
+      t.style.top = pct + '%';
+    }
+    t.addEventListener('pointerdown', e => e.stopPropagation());
+    t.addEventListener('click', e => {
+      e.stopPropagation();
+      if(side === 'output'){
+        if(pendingOutput === comp.id){
+          clearPending();
+        } else {
+          clearPending();
+          pendingOutput = comp.id;
+          t.classList.add('active-t');
+        }
+      } else {
+        if(pendingOutput){
+          addWire(pendingOutput, comp.id, port);
+          clearPending();
+        }
+      }
+    });
+    return t;
+  }
+
+  function clearPending(){
+    if(pendingOutput){
+      const from = findComp(pendingOutput);
+      if(from && from.el){
+        const ot = from.el.querySelector('.terminal.output');
+        if(ot) ot.classList.remove('active-t');
+      }
+    }
+    pendingOutput = null;
+    const draft = svg.querySelector('.draft-wire');
+    if(draft) draft.remove();
+  }
+
+  // ---------------- dragging blocks (pointer events: works for mouse + touch) ----------------
+  function startDrag(e, comp){
+    e.preventDefault();
+    const wrapRect = workspace.getBoundingClientRect();
+    dragging = {
+      comp,
+      pointerId: e.pointerId,
+      offX: (e.clientX - wrapRect.left) / zoom - comp.x,
+      offY: (e.clientY - wrapRect.top) / zoom - comp.y
+    };
+    try{ e.target.setPointerCapture(e.pointerId); }catch(err){}
+  }
+
+  document.addEventListener('pointermove', e => {
+    if(dragging && dragging.pointerId === e.pointerId){
+      const wrapRect = workspace.getBoundingClientRect();
+      let nx = (e.clientX - wrapRect.left) / zoom - dragging.offX;
+      let ny = (e.clientY - wrapRect.top) / zoom - dragging.offY;
+      nx = Math.max(0, nx); ny = Math.max(0, ny);
+      dragging.comp.x = nx; dragging.comp.y = ny;
+      dragging.comp.el.style.left = nx + 'px';
+      dragging.comp.el.style.top = ny + 'px';
+      renderWires();
+    }
+    if(pendingOutput){
+      const from = findComp(pendingOutput);
+      if(from){
+        const p1 = termPos(from, 'output');
+        const rect = workspace.getBoundingClientRect();
+        drawDraft(p1.x, p1.y, (e.clientX - rect.left) / zoom, (e.clientY - rect.top) / zoom);
+      }
+    }
+  });
+
+  document.addEventListener('pointerup', () => { dragging = null; });
+  document.addEventListener('pointercancel', () => { dragging = null; });
+
+  workspace.addEventListener('click', e => {
+    if(e.target === workspace) clearPending();
+  });
+
+  function drawDraft(x1, y1, x2, y2){
+    let path = svg.querySelector('.draft-wire');
+    if(!path){
+      path = document.createElementNS('http://www.w3.org/2000/svg','path');
+      path.setAttribute('class', 'wire draft-wire');
+      svg.appendChild(path);
+    }
+    path.setAttribute('d', bezier(x1, y1, x2, y2));
+  }
+
+  function bezier(x1,y1,x2,y2){
+    const dx = Math.max(40, Math.abs(x2-x1) * 0.5);
+    return `M ${x1} ${y1} C ${x1+dx} ${y1}, ${x2-dx} ${y2}, ${x2} ${y2}`;
+  }
+
+  // ---------------- rendering: wires ----------------
+  function renderWires(){
+    svg.querySelectorAll('.wire:not(.draft-wire)').forEach(n => n.remove());
+    svg.querySelectorAll('.wire-del').forEach(n => n.remove());
+    wires.forEach(w => {
+      const from = findComp(w.from), to = findComp(w.to);
+      if(!from || !to) return;
+      const p1 = termPos(from, 'output');
+      const p2 = termPos(to, 'input', w.toPort);
+      const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+      path.setAttribute('class', 'wire');
+      path.setAttribute('d', bezier(p1.x, p1.y, p2.x, p2.y));
+      svg.appendChild(path);
+      w.el = path;
+
+      const mx = (p1.x + p2.x) / 2, my = (p1.y + p2.y) / 2;
+      const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+      g.setAttribute('class', 'wire-del');
+      g.setAttribute('transform', `translate(${mx},${my})`);
+      const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      c.setAttribute('r', '8');
+      const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+      t.textContent = '×';
+      g.appendChild(c); g.appendChild(t);
+      g.addEventListener('click', () => removeWire(w));
+      svg.appendChild(g);
+      w.delEl = g;
+    });
+  }
+
+  // ---------------- DSL: tokenize / evaluate ----------------
+  function tokenize(expr){
+    // Word-boundary guards are essential: without them "NOT1" (an auto-generated
+    // gate ID) would match the keyword "NOT" first and get split into the tokens
+    // "NOT" and "1", silently corrupting the expression. The boundary after each
+    // keyword ensures it's only matched as a standalone word, not a prefix.
+    return expr.match(/\(|\)|\bAND\b|\bOR\b|\bNOT\b|\bXOR\b|[A-Za-z0-9_.]+/gi) || [];
+  }
+
+  function evalExpr(tokens, getValue){
+    let pos = 0;
+    function peek(){ return tokens[pos]; }
+    function next(){ return tokens[pos++]; }
+    function parseOr(){
+      let v = parseXor();
+      while(peek() && peek().toUpperCase() === 'OR'){ next(); v = parseXor() || v; }
+      return v;
+    }
+    function parseXor(){
+      let v = parseAnd();
+      while(peek() && peek().toUpperCase() === 'XOR'){ next(); v = !!parseAnd() !== !!v; }
+      return v;
+    }
+    function parseAnd(){
+      let v = parseNot();
+      while(peek() && peek().toUpperCase() === 'AND'){ next(); v = parseNot() && v; }
+      return v;
+    }
+    function parseNot(){
+      if(peek() && peek().toUpperCase() === 'NOT'){ next(); return !parseNot(); }
+      return parseAtom();
+    }
+    function parseAtom(){
+      if(peek() === '('){ next(); const v = parseOr(); if(peek() === ')') next(); return v; }
+      const t = next();
+      if(t === undefined) return false;
+      return getValue(t);
+    }
+    return !!parseOr();
+  }
+
+  function getValue(token){
+    if(/^-?\d+(\.\d+)?$/.test(token)) return parseFloat(token);
+    let id = token, prop = null;
+    if(token.includes('.')){ const parts = token.split('.'); id = parts[0]; prop = parts[1]; }
+    const c = findComp(id);
+    if(!c) return false;
+    if(prop){
+      prop = prop.toUpperCase();
+      if(prop === 'Q') return !!c.Q;
+      if(prop === 'IN') return !!c.IN;
+      if(prop === 'SET') return !!c.SET;
+      if(prop === 'RESET') return !!c.RESET;
+      if(prop === 'ET') return c.ET || 0;
+      if(prop === 'PT') return c.PT || 0;
+      if(prop === 'CV') return c.CV || 0;
+      if(prop === 'PV') return c.PV || 0;
+      if(prop === 'VALUE') return !!c.value;
+      return false;
+    }
+    if(Q_OUTPUT_TYPES.includes(c.type)) return !!c.Q;
+    return !!c.value;
+  }
+
+  // ---------------- IL (Instruction List) conversion ----------------
+  // Builds a small AST from the same grammar evalExpr() uses, then walks it to
+  // emit accumulator-style IL mnemonics (LD/AND/OR/XOR/NOT, with ANDN/ORN for a
+  // negated single operand, and bracketed sub-expressions for anything more complex).
+  function buildAST(tokens){
+    let pos = 0;
+    const peek = () => tokens[pos];
+    const next = () => tokens[pos++];
+    function parseOr(){
+      const items = [parseXor()];
+      while(peek() && peek().toUpperCase() === 'OR'){ next(); items.push(parseXor()); }
+      return items.length > 1 ? {t:'or', items} : items[0];
+    }
+    function parseXor(){
+      const items = [parseAnd()];
+      while(peek() && peek().toUpperCase() === 'XOR'){ next(); items.push(parseAnd()); }
+      return items.length > 1 ? {t:'xor', items} : items[0];
+    }
+    function parseAnd(){
+      const items = [parseNot()];
+      while(peek() && peek().toUpperCase() === 'AND'){ next(); items.push(parseNot()); }
+      return items.length > 1 ? {t:'and', items} : items[0];
+    }
+    function parseNot(){
+      if(peek() && peek().toUpperCase() === 'NOT'){ next(); return {t:'not', item: parseNot()}; }
+      return parseAtom();
+    }
+    function parseAtom(){
+      if(peek() === '('){ next(); const v = parseOr(); if(peek() === ')') next(); return v; }
+      const tkn = next();
+      return {t:'id', name: tkn === undefined ? 'FALSE' : tkn};
+    }
+    return parseOr();
+  }
+
+  function ilOperand(node){
+    // A node can be emitted as a single "AND x" / "ORN x" style operand only if
+    // it's a bare id, or NOT of a bare id — anything deeper needs a bracket block.
+    if(node.t === 'id') return {neg:false, name:node.name};
+    if(node.t === 'not' && node.item.t === 'id') return {neg:true, name:node.item.name};
+    return null;
+  }
+
+  function genFreshIL(node){
+    if(node.t === 'id') return ['LD ' + node.name];
+    if(node.t === 'not') return genFreshIL(node.item).concat(['NOT']);
+    const opWord = node.t === 'and' ? 'AND' : node.t === 'or' ? 'OR' : 'XOR';
+    let lines = genFreshIL(node.items[0]);
+    for(let i = 1; i < node.items.length; i++){
+      const opnd = ilOperand(node.items[i]);
+      if(opnd){
+        lines.push((opnd.neg ? opWord + 'N' : opWord) + ' ' + opnd.name);
+      } else {
+        lines.push(opWord + '(');
+        genFreshIL(node.items[i]).forEach(l => lines.push('  ' + l));
+        lines.push(')');
+      }
+    }
+    return lines;
+  }
+
+  function generateILFromST(stText){
+    const out = [];
+    stText.split('\n').forEach(raw => {
+      const ci = raw.indexOf('//');
+      const codePart = (ci >= 0 ? raw.slice(0, ci) : raw).trim();
+      const comment = ci >= 0 ? raw.slice(ci).trim() : '';
+      if(!codePart){ out.push(comment); return; }
+      const m = codePart.match(/^([A-Za-z0-9_.]+)\s*=\s*(.+)$/);
+      if(!m){ out.push('// ' + codePart); return; }
+      const target = m[1], rhs = m[2].trim();
+      if(/^-?\d+(\.\d+)?$/.test(rhs)){
+        out.push('LD ' + rhs, 'ST ' + target, '');
+        return;
+      }
+      genFreshIL(buildAST(tokenize(rhs))).forEach(l => out.push(l));
+      out.push('ST ' + target, '');
+    });
+    return out.join('\n').replace(/\n{3,}/g, '\n\n').trim() + '\n';
+  }
+
+  // ---------------- code generation ----------------
+  let ilMode = false;
+  let lastSTText = '';
+  function renderCodeView(){
+    codeArea.value = ilMode ? generateILFromST(lastSTText) : lastSTText;
+    codeArea.readOnly = ilMode;
+  }
+
+  function regenerateCodeFromCanvas(){
+    const lines = [];
+    lines.push('// Auto-generated from canvas wiring — feel free to edit');
+    lines.push('');
+    const timers = components.filter(c => TIMER_TYPES.includes(c.type));
+    if(timers.length){
+      lines.push('// Timer presets (ms)');
+      timers.forEach(t => lines.push(`${t.id}.PT = ${t.PT}`));
+      lines.push('');
+      lines.push('// Timer inputs');
+      timers.forEach(t => {
+        const ins = wires.filter(w => w.to === t.id).map(w => w.from);
+        if(ins.length) lines.push(`${t.id}.IN = ${ins.join(' OR ')}`);
+      });
+      lines.push('');
+    }
+    const counters = components.filter(c => c.type === 'CTR');
+    if(counters.length){
+      lines.push('// Counter presets');
+      counters.forEach(c => lines.push(`${c.id}.PV = ${c.PV}`));
+      lines.push('');
+      lines.push('// Counter inputs');
+      counters.forEach(c => {
+        const ins = wires.filter(w => w.to === c.id).map(w => w.from);
+        if(ins.length) lines.push(`${c.id}.IN = ${ins.join(' OR ')}`);
+      });
+      lines.push('');
+    }
+    const rels = components.filter(c => c.type === 'REL');
+    if(rels.length){
+      lines.push('// Relay inputs (SET / RESET latch)');
+      rels.forEach(r => {
+        const setIns = wires.filter(w => w.to === r.id && w.toPort === 'SET').map(w => w.from);
+        const rstIns = wires.filter(w => w.to === r.id && w.toPort === 'RESET').map(w => w.from);
+        if(setIns.length) lines.push(`${r.id}.SET = ${setIns.join(' OR ')}`);
+        if(rstIns.length) lines.push(`${r.id}.RESET = ${rstIns.join(' OR ')}`);
+      });
+      lines.push('');
+    }
+    const gates = components.filter(c => GATE_TYPES.includes(c.type));
+    if(gates.length){
+      lines.push('// Logic gates');
+      gates.forEach(g => {
+        const ins = wires.filter(w => w.to === g.id).map(w => w.from);
+        if(MIN2_GATES.includes(g.type)){
+          const needsMore = ins.length < 2;
+          if(g._gateWarnEl) g._gateWarnEl.classList.toggle('show', needsMore);
+          if(needsMore){ g.value = false; return; } // AND/OR stay off until 2+ inputs are wired
+        } else if(!ins.length){
+          return;
+        }
+        if(g.type === 'AND') lines.push(`${g.id} = ${ins.join(' AND ')}`);
+        else if(g.type === 'NOT') lines.push(`${g.id} = NOT (${ins.join(' OR ')})`);
+        else if(g.type === 'XOR') lines.push(`${g.id} = ${ins.join(' XOR ')}`);
+        else lines.push(`${g.id} = ${ins.join(' OR ')}`);
+      });
+      lines.push('');
+    }
+    const outputs = components.filter(c => OUTPUT_TYPES.includes(c.type));
+    if(outputs.length){
+      lines.push('// Outputs (lamps & motors — these can also feed other blocks downstream)');
+      outputs.forEach(o => {
+        const ins = wires.filter(w => w.to === o.id).map(w => w.from);
+        if(ins.length) lines.push(`${o.id} = ${ins.join(' OR ')}`);
+      });
+    }
+    lastSTText = lines.join('\n');
+    applyCompile(lastSTText);
+    renderCodeView();
+  }
+
+  function applyCompile(text){
+    const lines = text.split('\n');
+    const newProgram = [];
+    const errors = [];
+    lines.forEach((raw, idx) => {
+      const line = raw.split('//')[0].trim();
+      if(!line) return;
+      const m = line.match(/^([A-Za-z0-9_.]+)\s*=\s*(.+)$/);
+      if(!m){ errors.push(`Line ${idx+1}: syntax error — "${raw.trim()}"`); return; }
+      const target = m[1], rhs = m[2].trim();
+      if(/^-?\d+(\.\d+)?$/.test(rhs)){
+        const parts = target.split('.');
+        const c = findComp(parts[0]);
+        if(!c){ errors.push(`Line ${idx+1}: unknown component "${parts[0]}"`); return; }
+        if(parts[1] && parts[1].toUpperCase() === 'PT'){ c.PT = parseFloat(rhs); }
+        else if(parts[1] && parts[1].toUpperCase() === 'PV'){ c.PV = parseFloat(rhs); }
+        return;
+      }
+      const idPart = target.split('.')[0];
+      if(!findComp(idPart)){ errors.push(`Line ${idx+1}: unknown component "${idPart}"`); return; }
+      newProgram.push({target, tokens: tokenize(rhs)});
+    });
+    program = newProgram;
+    cpErrors.textContent = errors.join('  |  ');
+    syncTimerInputs();
+    return errors;
+  }
+
+  function syncTimerInputs(){
+    components.filter(c => TIMER_TYPES.includes(c.type)).forEach(c => {
+      const inp = c.el && c.el.querySelector('input[type=number]');
+      if(inp && document.activeElement !== inp) inp.value = c.PT;
+    });
+    components.filter(c => c.type === 'CTR').forEach(c => {
+      const inp = c.el && c.el.querySelector('input[type=number]');
+      if(inp && document.activeElement !== inp) inp.value = c.PV;
+    });
+  }
+
+  // ---------------- simulation ----------------
+  function pulseNow(){
+    // Inputs (PB/PBN/SW/EST) call this on every press/release/toggle. Without it, a
+    // state change only becomes visible on the next scheduled tick (up to TICK_MS
+    // later), which is what made short taps feel like they needed to be "held" to
+    // register — a quick down+up could occur between two ticks and be missed
+    // entirely. Running a zero-duration tick immediately guarantees every change,
+    // however brief, is seen by the program at least once.
+    if(running) tick(0);
+    updateVisuals();
+  }
+
+  function tick(dt){
+    // phase 1: control inputs — IN for timers/counters, SET/RESET for relays
+    program.forEach(line => {
+      const m = /\.(IN|SET|RESET)$/i.exec(line.target);
+      if(m){
+        const id = line.target.split('.')[0];
+        const c = findComp(id);
+        if(c) c[m[1].toUpperCase()] = evalExpr(line.tokens, getValue);
+      }
+    });
+    // phase 2: advance timers
+    components.forEach(c => {
+      if(c.type === 'TMR'){ // on-delay (TON): Q goes true PT ms after IN goes true, resets instantly
+        if(c.IN){
+          c.ET = Math.min((c.ET || 0) + dt, c.PT || 0);
+          c.Q = c.PT > 0 && c.ET >= c.PT;
+        } else {
+          c.ET = 0;
+          c.Q = false;
+        }
+      } else if(c.type === 'TOF'){ // off-delay (TOF): Q goes true instantly, stays true PT ms after IN drops
+        if(c.IN){
+          c.Q = true;
+          c.ET = 0;
+        } else {
+          c.ET = Math.min((c.ET || 0) + dt, c.PT || 0);
+          c.Q = c.PT > 0 ? (c.ET < c.PT) : false;
+        }
+      } else if(c.type === 'CTR'){ // count-up: CV increments on each rising edge of IN, Q compares CV to PV per selected mode — but only while IN is live
+        const inNow = !!c.IN;
+        if(inNow && !c._prevIN) c.CV = (c.CV || 0) + 1;
+        c._prevIN = inNow;
+        const cv = c.CV || 0, pv = c.PV || 0;
+        let satisfied;
+        if(c.mode === 'lte') satisfied = cv <= pv;
+        else if(c.mode === 'eq') satisfied = cv === pv;
+        else satisfied = pv > 0 && cv >= pv; // default 'gte'
+        c.Q = inNow && satisfied; // CV keeps its count, but Q drops as soon as the source goes dead
+      } else if(c.type === 'REL'){ // SR latch: SET/RESET hold Q while live; when neither is live, Q stays latched at its last value
+        const setNow = !!c.SET, rstNow = !!c.RESET;
+        if((c.mode || 'reset') === 'set'){ // set-dominant: SET wins if both are live at once
+          if(setNow) c.Q = true;
+          else if(rstNow) c.Q = false;
+        } else { // reset-dominant (default/safer): RESET wins if both are live at once
+          if(rstNow) c.Q = false;
+          else if(setNow) c.Q = true;
+        }
+      }
+    });
+    // phase 3: everything else (lamps etc)
+    program.forEach(line => {
+      if(/\.(IN|SET|RESET)$/i.test(line.target)) return;
+      const val = evalExpr(line.tokens, getValue);
+      const target = line.target;
+      if(target.includes('.')){
+        const parts = target.split('.');
+        const c = findComp(parts[0]);
+        if(c) c[parts[1].toUpperCase()] = val;
+      } else {
+        const c = findComp(target);
+        if(c) c.value = val;
+      }
+    });
+  }
+
+  function updateVisuals(){
+    components.forEach(c => {
+      if(c.type === 'LMP' && c._lampEl){
+        c._lampEl.classList.toggle('lit', !!c.value);
+        c._lampEl.classList.toggle('blinking', !!c.value && !!c.blink);
+      }
+      if(c.type === 'SW' && c.el){
+        const face = c.el.querySelector('.sw-face');
+        if(face){ face.classList.toggle('on', !!c.value); face.textContent = c.value ? 'ON' : 'OFF'; }
+      }
+      if(c.type === 'EST' && c.el){
+        const face = c.el.querySelector('.est-face');
+        const lbl = c.el.querySelector('.est-label');
+        if(face) face.classList.toggle('tripped', !c.value);
+        if(lbl) lbl.textContent = c.value ? 'NORMAL' : 'TRIPPED — twist to reset';
+      }
+      if(c.type === 'MTR' && c._mtrEl){
+        c._mtrEl.classList.toggle('running', !!c.value);
+      }
+      if(TIMER_TYPES.includes(c.type)){
+        if(c._fillEl) c._fillEl.style.width = (c.PT > 0 ? Math.min(100, (c.ET / c.PT) * 100) : 0) + '%';
+        if(c._miniEl) c._miniEl.classList.toggle('on', !!c.Q);
+      }
+      if(c.type === 'CTR'){
+        if(c._fillEl) c._fillEl.style.width = (c.PV > 0 ? Math.min(100, (c.CV / c.PV) * 100) : 0) + '%';
+        if(c._miniEl) c._miniEl.classList.toggle('on', !!c.Q);
+        if(c._countEl) c._countEl.innerHTML = 'Count: <b>' + (c.CV || 0) + '</b>';
+      }
+      if(GATE_TYPES.includes(c.type) && c._gateLampEl){
+        c._gateLampEl.classList.toggle('on', !!c.value);
+      }
+      if(c.type === 'REL'){
+        if(c._setLampEl) c._setLampEl.classList.toggle('on', !!c.SET);
+        if(c._rstLampEl) c._rstLampEl.classList.toggle('on', !!c.RESET);
+        if(c._qLampEl) c._qLampEl.classList.toggle('on', !!c.Q);
+      }
+    });
+    wires.forEach(w => {
+      if(!w.el) return;
+      const from = findComp(w.from);
+      const energized = from ? !!getValue(from.id) : false;
+      w.el.classList.toggle('energized', energized);
+    });
+  }
+
+  // The simulation runs on a fixed-rate setInterval rather than requestAnimationFrame.
+  // rAF is tied to the compositor's paint cycle, and some mobile browsers deprioritize
+  // or coalesce rAF callbacks while a touch/pointer is actively held down (e.g. holding
+  // a pushbutton) — which would make a timer's elapsed time appear frozen until the
+  // finger lifts and rendering "catches up" all at once. setInterval runs on the JS
+  // timer queue independent of touch/paint state, so PT/ET/CV keep advancing in real
+  // time no matter how long a button is held.
+  const TICK_MS = 30;
+  const PB_DELAY_MS = 150; // small real-world-feeling delay between physically pressing PB and its output actually going true
+  let lastT = performance.now();
+  function loop(){
+    const now = performance.now();
+    const dt = now - lastT;
+    lastT = now;
+    if(running) tick(dt);
+    updateVisuals();
+  }
+  setInterval(loop, TICK_MS);
+
+  // ---------------- example ----------------
+  function loadExample(){
+    components.forEach(c => c.el && c.el.remove());
+    components = []; wires = []; idCounters = {PB:0, PBN:0, SW:0, EST:0, LMP:0, MTR:0, TMR:0, TOF:0, CTR:0, REL:0, AND:0, OR:0, NOT:0, XOR:0}; placeCounter = 0;
+    const pb1 = addComponent('PB', 60, 60);
+    const sw1 = addComponent('SW', 60, 200);
+    const tmr1 = addComponent('TMR', 280, 200);
+    const lmp1 = addComponent('LMP', 500, 60);
+    const lmp2 = addComponent('LMP', 500, 200);
+    const mtr1 = addComponent('MTR', 700, 200);
+    tmr1.PT = 3000;
+    addWire(pb1.id, lmp1.id);
+    addWire(sw1.id, tmr1.id);
+    addWire(tmr1.id, lmp2.id);
+    addWire(lmp2.id, mtr1.id); // lamp's output feeding a motor's input
+    regenerateCodeFromCanvas();
+  }
+
+  // ---------------- UI wiring ----------------
+  document.querySelectorAll('.ptile, .bn-tile').forEach(tile => {
+    tile.addEventListener('click', () => addComponent(tile.dataset.type));
+  });
+
+  document.getElementById('btnRun').addEventListener('click', function(){
+    running = !running;
+    this.textContent = running ? 'Pause' : 'Run';
+    const pill = document.getElementById('statusPill');
+    const txt = document.getElementById('statusText');
+    pill.classList.toggle('run', running);
+    pill.classList.toggle('pause', !running);
+    txt.textContent = running ? 'RUNNING' : 'PAUSED';
+  });
+
+  document.getElementById('btnReset').addEventListener('click', () => {
+    components.forEach(c => {
+      c.value = false; c.ET = 0; c.Q = false; c.IN = false; c.SET = false; c.RESET = false; c.CV = 0; c._prevIN = false;
+      if(c.type === 'PB' && c.el){ clearTimeout(c._pbTimer); c.el.querySelector('.pb-face').classList.remove('pressed'); }
+      if(c.type === 'PBN'){ c.value = true; if(c.el){ c.el.querySelector('.pb-face').classList.remove('pressed'); } }
+      if(c.type === 'SW' && c.el){ const f = c.el.querySelector('.sw-face'); f.classList.remove('on'); f.textContent = 'OFF'; }
+      if(c.type === 'EST'){
+        c.value = true;
+        if(c.el){
+          const f = c.el.querySelector('.est-face');
+          const l = c.el.querySelector('.est-label');
+          if(f) f.classList.remove('tripped');
+          if(l) l.textContent = 'NORMAL';
+        }
+      }
+    });
+    updateVisuals();
+  });
+
+  // ---------------- save / load projects (persisted in this browser via localStorage) ----------------
+  const PROJECTS_KEY = 'ladderbench-projects-v1';
+  const btnProjects = document.getElementById('btnProjects');
+  const projPanel = document.getElementById('projPanel');
+  const projBackdrop = document.getElementById('projBackdrop');
+  const projClose = document.getElementById('projClose');
+  const projNameInput = document.getElementById('projNameInput');
+  const projSaveBtn = document.getElementById('projSaveBtn');
+  const projMsg = document.getElementById('projMsg');
+  const projList = document.getElementById('projList');
+
+  function getProjects(){
+    try{
+      const raw = localStorage.getItem(PROJECTS_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch(err){
+      console.error('Projects read error:', err);
+      return {};
+    }
+  }
+
+  function setProjects(projects){
+    localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects));
+  }
+
+  function buildProjectData(){
+    return {
+      components: components.map(c => ({
+        id:c.id, type:c.type, x:c.x, y:c.y,
+        PT:c.PT, PV:c.PV, mode:c.mode, color:c.color, blink:c.blink
+      })),
+      wires: wires.map(w => ({from:w.from, to:w.to, toPort:w.toPort || null})),
+      idCounters: {...idCounters}
+    };
+  }
+
+  function showProjMsg(text, isErr){
+    projMsg.textContent = text;
+    projMsg.classList.toggle('err', !!isErr);
+    if(text) setTimeout(() => { if(projMsg.textContent === text) projMsg.textContent = ''; }, 2200);
+  }
+
+  function fmtDate(iso){
+    try{
+      const d = new Date(iso);
+      return d.toLocaleDateString(undefined, {month:'short', day:'numeric'}) + ' · ' + d.toLocaleTimeString(undefined, {hour:'numeric', minute:'2-digit'});
+    } catch(err){ return ''; }
+  }
+
+  function renderProjectList(){
+    const projects = getProjects();
+    const names = Object.keys(projects).sort((a,b) => (projects[b].savedAt || '').localeCompare(projects[a].savedAt || ''));
+    projList.innerHTML = '';
+    if(names.length === 0){
+      const empty = document.createElement('div');
+      empty.className = 'proj-empty';
+      empty.textContent = 'No saved projects yet. Name your project above and hit Save.';
+      projList.appendChild(empty);
+      return;
+    }
+    names.forEach(name => {
+      const p = projects[name];
+      const row = document.createElement('div');
+      row.className = 'proj-row';
+
+      const info = document.createElement('div');
+      info.className = 'proj-info';
+      const nameEl = document.createElement('div');
+      nameEl.className = 'proj-name';
+      nameEl.textContent = name;
+      const metaEl = document.createElement('div');
+      metaEl.className = 'proj-meta';
+      const compCount = (p.data && p.data.components) ? p.data.components.length : 0;
+      metaEl.textContent = `${compCount} block${compCount === 1 ? '' : 's'} · ${fmtDate(p.savedAt)}`;
+      info.appendChild(nameEl); info.appendChild(metaEl);
+
+      const loadBtn = document.createElement('button');
+      loadBtn.textContent = 'Load';
+      loadBtn.addEventListener('click', () => loadProject(name));
+
+      const delBtn = document.createElement('button');
+      delBtn.className = 'proj-del';
+      delBtn.textContent = 'Delete';
+      delBtn.addEventListener('click', () => {
+        if(!confirm(`Delete project "${name}"? This can't be undone.`)) return;
+        const projects2 = getProjects();
+        delete projects2[name];
+        setProjects(projects2);
+        renderProjectList();
+        showProjMsg('Deleted.');
+      });
+
+      row.appendChild(info); row.appendChild(loadBtn); row.appendChild(delBtn);
+      projList.appendChild(row);
+    });
+  }
+
+  function saveProject(){
+    const name = projNameInput.value.trim();
+    if(!name){ showProjMsg('Enter a project name first.', true); projNameInput.focus(); return; }
+    try{
+      const projects = getProjects();
+      const overwrite = Object.prototype.hasOwnProperty.call(projects, name);
+      if(overwrite && !confirm(`A project named "${name}" already exists. Overwrite it?`)) return;
+      projects[name] = { data: buildProjectData(), savedAt: new Date().toISOString() };
+      setProjects(projects);
+      renderProjectList();
+      showProjMsg(overwrite ? 'Overwritten!' : 'Saved!');
+      projNameInput.value = '';
+    } catch(err){
+      console.error('Save error:', err);
+      showProjMsg('Save failed — storage may be full or blocked.', true);
+    }
+  }
+
+  function loadProject(name){
+    const projects = getProjects();
+    const p = projects[name];
+    if(!p || !p.data){ showProjMsg('Project not found.', true); return; }
+    try{
+      const data = p.data;
+      components.forEach(c => c.el && c.el.remove());
+      components = []; wires = []; placeCounter = 0;
+      idCounters = data.idCounters || {PB:0, PBN:0, SW:0, EST:0, LMP:0, MTR:0, TMR:0, TOF:0, CTR:0, REL:0, AND:0, OR:0, NOT:0, XOR:0};
+      (data.components || []).forEach(cd => {
+        const comp = {
+          id:cd.id, type:cd.type, x:cd.x, y:cd.y,
+          value: cd.type === 'PBN' || cd.type === 'EST', PT: cd.PT ?? 2000, ET:0, Q:false, IN:false, SET:false, RESET:false,
+          color: cd.color || 'amber', blink: !!cd.blink, PV: cd.PV ?? 5, CV:0, mode: cd.mode || defaultMode(cd.type), _prevIN:false
+        };
+        components.push(comp);
+        renderComponent(comp);
+      });
+      (data.wires || []).forEach(wd => wires.push({from:wd.from, to:wd.to, toPort:wd.toPort || null}));
+      renderWires();
+      regenerateCodeFromCanvas();
+      showProjMsg(`Loaded "${name}"!`);
+      closeProjects();
+    } catch(err){
+      console.error('Load error:', err);
+      showProjMsg('Load failed — saved data may be corrupted.', true);
+    }
+  }
+
+  function openProjects(){ renderProjectList(); projPanel.classList.add('open'); projBackdrop.classList.add('open'); }
+  function closeProjects(){ projPanel.classList.remove('open'); projBackdrop.classList.remove('open'); }
+
+  if(btnProjects) btnProjects.addEventListener('click', openProjects);
+  if(projClose) projClose.addEventListener('click', closeProjects);
+  if(projBackdrop) projBackdrop.addEventListener('click', closeProjects);
+  if(projSaveBtn) projSaveBtn.addEventListener('click', saveProject);
+  if(projNameInput) projNameInput.addEventListener('keydown', e => { if(e.key === 'Enter') saveProject(); });
+
+  document.getElementById('btnExample').addEventListener('click', loadExample);
+  document.getElementById('btnApply').addEventListener('click', () => {
+    if(ilMode) return; // Instruction List is a read-only view — switch to Structured Text to edit
+    lastSTText = codeArea.value;
+    applyCompile(lastSTText);
+  });
+  document.getElementById('btnRegen').addEventListener('click', regenerateCodeFromCanvas);
+
+  const tabST = document.getElementById('tabST');
+  const tabIL = document.getElementById('tabIL');
+  tabST.addEventListener('click', () => {
+    if(!ilMode) return;
+    ilMode = false;
+    tabST.classList.add('active'); tabIL.classList.remove('active');
+    renderCodeView();
+  });
+  tabIL.addEventListener('click', () => {
+    if(ilMode) return;
+    ilMode = true;
+    tabIL.classList.add('active'); tabST.classList.remove('active');
+    renderCodeView();
+  });
+
+  const codePanel = document.getElementById('codePanel');
+  const cpBackdrop = document.getElementById('cpBackdrop');
+  function openCode(){ codePanel.classList.add('open'); cpBackdrop.classList.add('open'); }
+  function closeCode(){ codePanel.classList.remove('open'); cpBackdrop.classList.remove('open'); }
+  document.getElementById('btnToggleCode').addEventListener('click', () => {
+    codePanel.classList.contains('open') ? closeCode() : openCode();
+  });
+  document.getElementById('cpClose').addEventListener('click', closeCode);
+  cpBackdrop.addEventListener('click', closeCode);
+
+  document.getElementById('zoomIn').addEventListener('click', () => setZoom(zoom + ZOOM_STEP));
+  document.getElementById('zoomOut').addEventListener('click', () => setZoom(zoom - ZOOM_STEP));
+  document.getElementById('zoomPct').addEventListener('click', () => setZoom(1));
+  wrap.addEventListener('wheel', e => {
+    if(!e.ctrlKey && !e.metaKey) return;
+    e.preventDefault();
+    setZoom(zoom + (e.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP));
+  }, {passive:false});
+
+  // ---------------- pinch-to-zoom (touch) ----------------
+  function touchDist(touches){
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.hypot(dx, dy);
+  }
+  let pinch = null;
+  wrap.addEventListener('touchstart', e => {
+    if(e.touches.length === 2){
+      pinch = { dist: touchDist(e.touches), zoom: zoom };
+    }
+  }, {passive:true});
+  wrap.addEventListener('touchmove', e => {
+    if(e.touches.length === 2 && pinch){
+      e.preventDefault();
+      const scale = touchDist(e.touches) / pinch.dist;
+      setZoom(pinch.zoom * scale);
+    }
+  }, {passive:false});
+  const endPinch = e => { if(e.touches.length < 2) pinch = null; };
+  wrap.addEventListener('touchend', endPinch, {passive:true});
+  wrap.addEventListener('touchcancel', endPinch, {passive:true});
+
+  setZoom(1);
+
+  // seed with the example so the app isn't blank on load
+  loadExample();
+})();
+</script>
+</body>
+</html>
