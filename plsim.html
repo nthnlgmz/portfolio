@@ -95,8 +95,18 @@
   .legend{font-size:10px; color:var(--muted); padding:0 4px; line-height:1.6;}
   .legend code{color:#c9d4d6;}
 
+  /* ---------- fully hidden scrollbars (scrolling still works via wheel/touch/middle-click-pan) ---------- */
+  .palette, .proj-list, .cp-errors, .workspace-wrap{
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* old Edge/IE */
+  }
+  .palette::-webkit-scrollbar, .proj-list::-webkit-scrollbar, .cp-errors::-webkit-scrollbar, .workspace-wrap::-webkit-scrollbar{
+    display: none; /* Chrome/Edge/Safari */
+  }
+
   /* ---------- workspace ---------- */
   .workspace-wrap{flex:1; position:relative; overflow:auto; background:var(--bg2); touch-action:pan-x pan-y;}
+  .workspace-wrap.panning{cursor:grabbing;}
   .workspace{
     position:relative; width:2200px; height:1400px;
     background-image: radial-gradient(circle, #2a3133 1px, transparent 1px);
@@ -113,10 +123,38 @@
   .wire-del:hover text{fill:#fff;}
   .draft-wire{stroke:#8a9497; stroke-dasharray:5 5; stroke-width:2;}
 
+  .wire-add{pointer-events:auto; cursor:pointer;}
+  .wire-add circle{fill:#1c2a22; stroke:var(--line); stroke-width:1;}
+  .wire-add text{fill:var(--muted); font-size:12px; font-weight:700; font-family:'JetBrains Mono',monospace; text-anchor:middle; dominant-baseline:central; pointer-events:none;}
+  .wire-add:hover circle{fill:var(--ok); stroke:var(--ok);}
+  .wire-add:hover text{fill:#0c1210;}
+
+  .splice-menu{
+    position:fixed; z-index:80; width:172px; max-height:70vh; overflow-y:auto;
+    background:var(--panel); border:1px solid var(--line); border-radius:6px;
+    box-shadow:0 8px 24px rgba(0,0,0,.5); padding:6px;
+    scrollbar-width:none;
+  }
+  .splice-menu::-webkit-scrollbar{display:none;}
+  .splice-menu-label{font-size:9.5px; color:var(--muted); letter-spacing:.1em; text-transform:uppercase; padding:6px 6px 4px;}
+  .splice-opt{
+    width:100%; display:flex; align-items:center; gap:9px; padding:8px 8px; margin-bottom:4px;
+    background:var(--panel2); border:1px solid var(--line); border-left:3px solid var(--tile-color,#666);
+    border-radius:3px; cursor:pointer; text-align:left; font-family:inherit;
+  }
+  .splice-opt:last-child{margin-bottom:0;}
+  .splice-opt:hover{background:#2c3234;}
+  .splice-icon{
+    width:28px; height:22px; border-radius:4px; display:flex; align-items:center; justify-content:center;
+    font-size:10.5px; font-weight:700; font-family:'Oswald',sans-serif; color:var(--tile-color,#ddd);
+    background:color-mix(in srgb, var(--tile-color,#666) 18%, transparent); flex-shrink:0;
+  }
+  .splice-sub{font-size:11px; color:var(--text);}
+
   .block{
     position:absolute; width:150px; height:92px; background:var(--panel);
     border:1px solid var(--line); border-radius:5px; box-shadow:0 3px 10px rgba(0,0,0,.4);
-    user-select:none;
+    user-select:none; z-index:1;
   }
   .block .head{
     display:flex; align-items:center; justify-content:space-between; padding:4px 8px;
@@ -316,6 +354,8 @@
   .proj-panel .cp-head{padding:12px 14px 6px; border-bottom:1px solid var(--line); display:flex; align-items:flex-start; justify-content:space-between; gap:8px;}
   .proj-panel .cp-head h3{margin:0 0 2px; font-size:13px; color:#f2efe9;}
   .proj-panel .cp-head p{margin:0; font-size:10.5px; color:var(--muted); line-height:1.5;}
+  .proj-current{padding:8px 14px 0; font-size:10.5px; color:var(--ok);}
+  .proj-current:empty{display:none;}
   .proj-save-row{display:flex; gap:8px; padding:10px 14px; border-bottom:1px solid var(--line);}
   .proj-save-row input{
     flex:1; min-width:0; background:#101314; border:1px solid var(--line); color:var(--text); border-radius:3px;
@@ -575,6 +615,7 @@
         </div>
         <span class="cp-close" id="projClose">×</span>
       </div>
+      <div class="proj-current" id="projCurrent"></div>
       <div class="proj-save-row">
         <input type="text" id="projNameInput" placeholder="Project name…" maxlength="60">
         <button class="ctrl accent" id="projSaveBtn">Save</button>
@@ -650,7 +691,7 @@
   const BLOCK_W = 150, BLOCK_H = 92;
   const BLOCK_H_OVERRIDE = {LMP: 128, CTR: 176, EST: 118, REL: 156}; // lamp needs extra room for the color swatch + blink row; counter for the mode select, live count, wired reset row + reset button; e-stop for its round button; relay for two labeled ports + mode + reset button
   function blockH(type){ return BLOCK_H_OVERRIDE[type] || BLOCK_H; }
-  const CANVAS_W = 2200, CANVAS_H = 1400;
+  const CANVAS_W = 8000, CANVAS_H = 6000; // generous working area — not literally infinite, but comfortably fits a very large number of components before anyone hits an edge
   const TYPE_COLOR = {PB:'var(--pb)', PBN:'var(--pbn)', SW:'var(--sw)', EST:'var(--est)', LMP:'var(--lmp)', MTR:'var(--mtr)', TMR:'var(--tmr)', TOF:'var(--tof)', CTR:'var(--ctr)', REL:'var(--rel)', AND:'var(--gate)', OR:'var(--gate)', NOT:'var(--gate)', XOR:'var(--gate)'};
   const TIMER_TYPES = ['TMR','TOF'];
   const GATE_TYPES = ['AND','OR','NOT','XOR'];
@@ -701,6 +742,18 @@
     zoomStage.style.height = (CANVAS_H * zoom) + 'px';
     const pct = document.getElementById('zoomPct');
     if(pct) pct.textContent = Math.round(zoom * 100) + '%';
+  }
+
+  // zooms while keeping whatever canvas point is under (clientX, clientY) fixed on screen,
+  // so scrolling over a spot on the canvas zooms toward that spot instead of the corner
+  function setZoomAtPoint(z, clientX, clientY){
+    const wrapRect = wrap.getBoundingClientRect();
+    const localX = clientX - wrapRect.left, localY = clientY - wrapRect.top;
+    const canvasX = (wrap.scrollLeft + localX) / zoom;
+    const canvasY = (wrap.scrollTop + localY) / zoom;
+    setZoom(z);
+    wrap.scrollLeft = canvasX * zoom - localX;
+    wrap.scrollTop = canvasY * zoom - localY;
   }
 
   // ---------------- helpers ----------------
@@ -819,9 +872,11 @@
     if(!comp) return;
     if(comp.el) comp.el.remove();
     components = components.filter(c => c.id !== id);
-    const toRemove = wires.filter(w => w.from === id || w.to === id);
-    toRemove.forEach(w => { if(w.el) w.el.remove(); if(w.delEl) w.delEl.remove(); });
     wires = wires.filter(w => w.from !== id && w.to !== id);
+    // re-render (rather than plucking individual wire/×/+ elements by hand) so every
+    // leftover marker tied to a deleted wire — including the + splice button — is
+    // guaranteed to be cleared, not just the ones we remembered to track a reference for
+    renderWires();
     regenerateCodeFromCanvas();
   }
 
@@ -1268,6 +1323,9 @@
       offX: (e.clientX - wrapRect.left) / zoom - comp.x,
       offY: (e.clientY - wrapRect.top) / zoom - comp.y
     };
+    // move to the end of the DOM so it renders above any other block it's dragged over —
+    // otherwise an earlier-placed block's terminal dots could poke through a block placed later
+    if(comp.el && comp.el.parentNode) comp.el.parentNode.appendChild(comp.el);
     try{ e.target.setPointerCapture(e.pointerId); }catch(err){}
   }
 
@@ -1318,6 +1376,7 @@
   function renderWires(){
     svg.querySelectorAll('.wire:not(.draft-wire)').forEach(n => n.remove());
     svg.querySelectorAll('.wire-del').forEach(n => n.remove());
+    svg.querySelectorAll('.wire-add').forEach(n => n.remove());
     wires.forEach(w => {
       const from = findComp(w.from), to = findComp(w.to);
       if(!from || !to) return;
@@ -1330,9 +1389,21 @@
       w.el = path;
 
       const mx = (p1.x + p2.x) / 2, my = (p1.y + p2.y) / 2;
+
+      const add = document.createElementNS('http://www.w3.org/2000/svg','g');
+      add.setAttribute('class', 'wire-add');
+      add.setAttribute('transform', `translate(${mx - 13},${my})`);
+      const ac = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      ac.setAttribute('r', '8');
+      const at = document.createElementNS('http://www.w3.org/2000/svg','text');
+      at.textContent = '+';
+      add.appendChild(ac); add.appendChild(at);
+      add.addEventListener('click', e => { e.stopPropagation(); openSpliceMenu(e.clientX, e.clientY, w); });
+      svg.appendChild(add);
+
       const g = document.createElementNS('http://www.w3.org/2000/svg','g');
       g.setAttribute('class', 'wire-del');
-      g.setAttribute('transform', `translate(${mx},${my})`);
+      g.setAttribute('transform', `translate(${mx + 13},${my})`);
       const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
       c.setAttribute('r', '8');
       const t = document.createElementNS('http://www.w3.org/2000/svg','text');
@@ -1342,6 +1413,89 @@
       svg.appendChild(g);
       w.delEl = g;
     });
+  }
+
+  // ---------------- splice a component into an existing wire ----------------
+  // Only components that have BOTH a wired input and a wired output make sense to insert
+  // mid-line — pure sources (PB/SW/EST, no input) or pure sinks (LMP/MTR, no output) would
+  // leave one side of the wire dangling, so they're intentionally left out of this menu.
+  const SPLICE_OPTIONS = [
+    {type:'TMR', label:'TON', sub:'Timer On'},
+    {type:'TOF', label:'TOF', sub:'Timer Off'},
+    {type:'CTR', label:'CTU', sub:'Counter'},
+    {type:'REL', label:'S/R', sub:'Relay'},
+    {type:'AND', label:'AND', sub:'AND gate'},
+    {type:'OR',  label:'OR',  sub:'OR gate'},
+    {type:'NOT', label:'NOT', sub:'NOT gate'},
+    {type:'XOR', label:'XOR', sub:'XOR gate'}
+  ];
+  let activeSpliceMenu = null;
+
+  function closeSpliceMenu(){
+    if(activeSpliceMenu){ activeSpliceMenu.remove(); activeSpliceMenu = null; }
+    document.removeEventListener('pointerdown', handleSpliceMenuOutsideClick, true);
+  }
+  function handleSpliceMenuOutsideClick(e){
+    if(activeSpliceMenu && !activeSpliceMenu.contains(e.target)) closeSpliceMenu();
+  }
+
+  function openSpliceMenu(clientX, clientY, wire){
+    closeSpliceMenu();
+    const menu = document.createElement('div');
+    menu.className = 'splice-menu';
+    const label = document.createElement('div');
+    label.className = 'splice-menu-label';
+    label.textContent = 'Insert into wire';
+    menu.appendChild(label);
+    SPLICE_OPTIONS.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'splice-opt';
+      btn.style.setProperty('--tile-color', TYPE_COLOR[opt.type]);
+      const icon = document.createElement('span');
+      icon.className = 'splice-icon';
+      icon.textContent = opt.label;
+      const sub = document.createElement('span');
+      sub.className = 'splice-sub';
+      sub.textContent = opt.sub;
+      btn.appendChild(icon); btn.appendChild(sub);
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        spliceComponent(wire, opt.type);
+        closeSpliceMenu();
+      });
+      menu.appendChild(btn);
+    });
+    document.body.appendChild(menu);
+    const mw = menu.offsetWidth, mh = menu.offsetHeight;
+    let left = clientX + 10, top = clientY - mh / 2;
+    if(left + mw > window.innerWidth - 8) left = clientX - mw - 10;
+    top = Math.min(Math.max(8, top), window.innerHeight - mh - 8);
+    menu.style.left = left + 'px';
+    menu.style.top = top + 'px';
+    activeSpliceMenu = menu;
+    setTimeout(() => document.addEventListener('pointerdown', handleSpliceMenuOutsideClick, true), 0);
+  }
+
+  function spliceComponent(w, type){
+    const from = findComp(w.from), to = findComp(w.to);
+    if(!from || !to) return;
+    const p1 = termPos(from, 'output');
+    const p2 = termPos(to, 'input', w.toPort);
+    const midX = (p1.x + p2.x) / 2, midY = (p1.y + p2.y) / 2;
+    const x = Math.max(10, Math.min(CANVAS_W - BLOCK_W - 10, midX - BLOCK_W / 2));
+    const y = Math.max(10, Math.min(CANVAS_H - blockH(type) - 10, midY - blockH(type) / 2));
+    const comp = addComponent(type, x, y);
+    // the original source feeds the new component's primary input (SET for a relay,
+    // IN for a counter, its single input for everything else); the new component's
+    // output then continues on to wherever the original wire's far end — and port —
+    // used to be, so a splice into a REL's RESET line still lands on RESET, etc.
+    const inPort = type === 'REL' ? 'SET' : (type === 'CTR' ? 'IN' : null);
+    wires = wires.filter(x2 => x2 !== w);
+    wires.push({from: from.id, to: comp.id, toPort: inPort});
+    wires.push({from: comp.id, to: to.id, toPort: w.toPort || null});
+    renderWires();
+    regenerateCodeFromCanvas();
   }
 
   // ---------------- DSL: tokenize / evaluate ----------------
@@ -1759,6 +1913,7 @@
   function loadExample(){
     components.forEach(c => c.el && c.el.remove());
     components = []; wires = []; idCounters = {PB:0, PBN:0, SW:0, EST:0, LMP:0, MTR:0, TMR:0, TOF:0, CTR:0, REL:0, AND:0, OR:0, NOT:0, XOR:0}; placeCounter = 0;
+    if(typeof currentProjectName !== 'undefined'){ currentProjectName = null; if(projNameInput) projNameInput.value = ''; if(typeof updateProjCurrent === 'function') updateProjCurrent(); }
     const pb1 = addComponent('PB', 60, 60);
     const sw1 = addComponent('SW', 60, 200);
     const tmr1 = addComponent('TMR', 280, 200);
@@ -1817,6 +1972,8 @@
   const projSaveBtn = document.getElementById('projSaveBtn');
   const projMsg = document.getElementById('projMsg');
   const projList = document.getElementById('projList');
+  const projCurrent = document.getElementById('projCurrent');
+  let currentProjectName = null; // name of the project currently loaded in the workspace, if any
 
   function getProjects(){
     try{
@@ -1895,6 +2052,11 @@
         const projects2 = getProjects();
         delete projects2[name];
         setProjects(projects2);
+        if(currentProjectName === name){
+          currentProjectName = null;
+          projNameInput.value = '';
+          updateProjCurrent();
+        }
         renderProjectList();
         showProjMsg('Deleted.');
       });
@@ -1910,16 +2072,25 @@
     try{
       const projects = getProjects();
       const overwrite = Object.prototype.hasOwnProperty.call(projects, name);
-      if(overwrite && !confirm(`A project named "${name}" already exists. Overwrite it?`)) return;
+      // if this is the project we already have open, just update it silently — no need to
+      // ask "overwrite?" every time, since the person clearly means to save their edits to it
+      const isSameProject = overwrite && name === currentProjectName;
+      if(overwrite && !isSameProject && !confirm(`A project named "${name}" already exists. Overwrite it?`)) return;
       projects[name] = { data: buildProjectData(), savedAt: new Date().toISOString() };
       setProjects(projects);
+      currentProjectName = name;
+      updateProjCurrent();
       renderProjectList();
-      showProjMsg(overwrite ? 'Overwritten!' : 'Saved!');
-      projNameInput.value = '';
+      showProjMsg(isSameProject ? 'Updated!' : (overwrite ? 'Overwritten!' : 'Saved!'));
     } catch(err){
       console.error('Save error:', err);
       showProjMsg('Save failed — storage may be full or blocked.', true);
     }
+  }
+
+  function updateProjCurrent(){
+    if(!projCurrent) return;
+    projCurrent.textContent = currentProjectName ? `Editing "${currentProjectName}" — Save updates it` : '';
   }
 
   function loadProject(name){
@@ -1943,6 +2114,9 @@
       (data.wires || []).forEach(wd => wires.push({from:wd.from, to:wd.to, toPort:wd.toPort || null}));
       renderWires();
       regenerateCodeFromCanvas();
+      currentProjectName = name;
+      projNameInput.value = name;
+      updateProjCurrent();
       showProjMsg(`Loaded "${name}"!`);
       closeProjects();
     } catch(err){
@@ -1951,7 +2125,7 @@
     }
   }
 
-  function openProjects(){ renderProjectList(); projPanel.classList.add('open'); projBackdrop.classList.add('open'); }
+  function openProjects(){ renderProjectList(); updateProjCurrent(); projPanel.classList.add('open'); projBackdrop.classList.add('open'); }
   function closeProjects(){ projPanel.classList.remove('open'); projBackdrop.classList.remove('open'); }
 
   if(btnProjects) btnProjects.addEventListener('click', openProjects);
@@ -1997,9 +2171,8 @@
   document.getElementById('zoomOut').addEventListener('click', () => setZoom(zoom - ZOOM_STEP));
   document.getElementById('zoomPct').addEventListener('click', () => setZoom(1));
   wrap.addEventListener('wheel', e => {
-    if(!e.ctrlKey && !e.metaKey) return;
     e.preventDefault();
-    setZoom(zoom + (e.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP));
+    setZoomAtPoint(zoom + (e.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP), e.clientX, e.clientY);
   }, {passive:false});
 
   // ---------------- pinch-to-zoom (touch) ----------------
@@ -2026,6 +2199,33 @@
   wrap.addEventListener('touchcancel', endPinch, {passive:true});
 
   setZoom(1);
+
+  // ---------------- middle-mouse-button drag to pan (desktop) ----------------
+  let mpan = null;
+  wrap.addEventListener('pointerdown', e => {
+    if(e.button !== 1) return; // middle mouse button only
+    e.preventDefault();
+    mpan = { startX: e.clientX, startY: e.clientY, scrollLeft: wrap.scrollLeft, scrollTop: wrap.scrollTop, pointerId: e.pointerId };
+    wrap.classList.add('panning');
+    try{ wrap.setPointerCapture(e.pointerId); }catch(err){}
+  });
+  wrap.addEventListener('pointermove', e => {
+    if(!mpan || e.pointerId !== mpan.pointerId) return;
+    e.preventDefault();
+    wrap.scrollLeft = mpan.scrollLeft - (e.clientX - mpan.startX);
+    wrap.scrollTop = mpan.scrollTop - (e.clientY - mpan.startY);
+  });
+  function endMpan(e){
+    if(!mpan || (e.pointerId !== undefined && e.pointerId !== mpan.pointerId)) return;
+    wrap.classList.remove('panning');
+    try{ wrap.releasePointerCapture(mpan.pointerId); }catch(err){}
+    mpan = null;
+  }
+  wrap.addEventListener('pointerup', endMpan);
+  wrap.addEventListener('pointercancel', endMpan);
+  // stop the browser's native middle-click autoscroll icon from showing instead of our own pan
+  wrap.addEventListener('auxclick', e => { if(e.button === 1) e.preventDefault(); });
+  wrap.addEventListener('mousedown', e => { if(e.button === 1) e.preventDefault(); });
 
   // seed with the example so the app isn't blank on load
   loadExample();
